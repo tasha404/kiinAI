@@ -230,34 +230,31 @@ function App() {
       ✏️ {sidebarOpen && <span>New chat</span>}
     </div>
 
-    <div className="action">
-      🔍 {sidebarOpen && <span>Search chats</span>}
-    </div>
   </div>
 
   {/* CHATS */}
   <div className="chat-list">
     {history.map((h) => (
       <div
-        key={h.id}
-        className={`chat-row ${chatId === h.id ? "active" : ""}`}
-      >
-        <span onClick={() => loadChat(h.id)}>
-          {sidebarOpen ? h.title : "💬"}
-        </span>
+  key={h.id}
+  className={`chat-row ${chatId === h.id ? "active" : ""}`}
+>
+  <span onClick={() => loadChat(h.id)}>
+    {sidebarOpen ? h.title : "💬"}
+  </span>
 
-        {sidebarOpen && (
-          <button onClick={() => deleteChat(h.id)}>⋯</button>
-        )}
-      </div>
+  {sidebarOpen && (
+    <button onClick={() => deleteChat(h.id)}>⋯</button>
+  )}
+</div>
     ))}
   </div>
 
   {/* PROFILE */}
   <div className="profile" onClick={logout}>
-    <div className="avatar">NA</div>
-    {sidebarOpen && <span>My Account</span>}
-  </div>
+  <div className="avatar">NA</div>
+  {sidebarOpen && <span>Logout</span>}
+</div>
 </div>
 
       {/* 💬 CHAT */}
