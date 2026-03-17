@@ -20,6 +20,7 @@ import {
   query,
   where,
   orderBy,
+  serverTimestamp,
 } from "firebase/firestore";
 
 const API_URL = "https://zengpt-j99f.onrender.com/chat";
@@ -27,22 +28,22 @@ const API_URL = "https://zengpt-j99f.onrender.com/chat";
 function App() {
   const [user, setUser] = useState(null);
 
-  // auth
+  // 🔐 auth
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // chat
+  // 💬 chat
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const [chatId, setChatId] = useState(null);
 
-  // sidebar
+  // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [history, setHistory] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
-  // 🔐 Auth state
+  // 🔐 auth listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -53,12 +54,20 @@ function App() {
 
   // 🔑 LOGIN
   const login = async () => {
-    await signInWithEmailAndPassword(auth, email, password);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   // 🆕 SIGNUP
   const signup = async () => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   // 🚪 LOGOUT
@@ -67,7 +76,7 @@ function App() {
     setChat([]);
   };
 
-  // 📂 LOAD HISTORY (list of chats)
+  // 📂 LOAD SIDEBAR HISTORY
   const loadHistory = async (uid) => {
     const q = query(collection(db, "sessions"), where("uid", "==", uid));
     const snap = await getDocs(q);
@@ -98,7 +107,7 @@ function App() {
   };
 
   // 🆕 NEW CHAT
-  const newChat = async () => {
+  const newChat = () => {
     setChat([]);
     setChatId(null);
   };
@@ -107,6 +116,10 @@ function App() {
   const deleteChat = async (id) => {
     await deleteDoc(doc(db, "sessions", id));
     loadHistory(user.uid);
+    if (chatId === id) {
+      setChat([]);
+      setChatId(null);
+    }
   };
 
   // 🚀 SEND MESSAGE
@@ -121,7 +134,9 @@ function App() {
     try {
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ message }),
       });
 
@@ -132,63 +147,71 @@ function App() {
 
       let currentChatId = chatId;
 
-      // create new session if none
+      // 🆕 create new session if needed
       if (!currentChatId) {
         const docRef = await addDoc(collection(db, "sessions"), {
           uid: user.uid,
           title: message.slice(0, 20),
-          createdAt: new Date(),
+          createdAt: serverTimestamp(),
         });
+
         currentChatId = docRef.id;
         setChatId(currentChatId);
         loadHistory(user.uid);
       }
 
-      // save messages
+      // 💾 save messages
       await addDoc(collection(db, "messages"), {
         chatId: currentChatId,
         role: "user",
         content: message,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
 
       await addDoc(collection(db, "messages"), {
         chatId: currentChatId,
         role: "assistant",
         content: data.reply,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
     } catch (err) {
       console.error(err);
+      alert("Server error");
     }
 
     setLoading(false);
   };
 
-  // 🔐 LOGIN UI
+  // 🔐 AUTH PAGE
   if (!user) {
     return (
-      <div className="auth">
-        <h2>ZenGPT ✨</h2>
-        <input
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          placeholder="Password"
-          type="password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button onClick={login}>Login</button>
-        <button onClick={signup}>Sign Up</button>
+      <div className="auth-page">
+        <div className="auth-card">
+          <h2>💬 ZenGPT</h2>
+
+          <input
+            placeholder="Email"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button onClick={login}>Login</button>
+          <button onClick={signup}>Sign Up</button>
+        </div>
       </div>
     );
   }
 
+  // 💬 MAIN APP
   return (
     <div className="app">
-      {/* SIDEBAR */}
-      <div className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
+      {/* 📁 SIDEBAR */}
+      <div className={`sidebar ${sidebarOpen ? "" : "closed"}`}>
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
 
         <button onClick={newChat}>+ New Chat</button>
@@ -203,7 +226,7 @@ function App() {
         <button onClick={logout}>Logout</button>
       </div>
 
-      {/* CHAT AREA */}
+      {/* 💬 CHAT */}
       <div className="main">
         <div className="chat-box">
           {chat.map((msg, i) => (
@@ -211,7 +234,10 @@ function App() {
               <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
           ))}
-          {loading && <div className="message assistant">Typing...</div>}
+
+          {loading && (
+            <div className="message assistant">typing...</div>
+          )}
         </div>
 
         <div className="input-box">
@@ -219,7 +245,7 @@ function App() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Ask anything..."
+            placeholder="iMessage your AI..."
           />
           <button onClick={sendMessage}>Send</button>
         </div>
