@@ -8,33 +8,55 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-console.log("ENV CHECK:", process.env.OPENAI_API_KEY ? "FOUND" : "MISSING");
-// middleware
+
+// CORS configuration - Allow your Vercel frontend
 app.use(cors({
-  origin: "*",
+  origin: [
+    "https://kiinai.vercel.app", // Your Vercel frontend
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  allowedHeaders: ["Content-Type"],
+  credentials: true
 }));
 
-app.use(cors());
 app.use(express.json());
 
-// test route (so browser doesn't show error)
+// Test route
 app.get("/", (req, res) => {
-  res.send("Backend is running 🚀");
+  res.json({ 
+    status: "online", 
+    message: "Backend is running on Render 🚀",
+    frontend: "https://kiinai.vercel.app"
+  });
 });
 
-// OpenAI client
-const client = new OpenAI({
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ 
+    status: "healthy",
+    openai: process.env.OPENAI_API_KEY ? "configured" : "missing"
+  });
+});
+
+// Initialize OpenAI
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// chat endpoint
+// Chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
-    const response = await client.chat.completions.create({
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Invalid messages format" });
+    }
+
+    console.log("📨 Received messages:", messages.length);
+
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -43,29 +65,63 @@ app.post("/chat", async (req, res) => {
         },
         ...messages,
       ],
+      temperature: 0.7,
+      max_tokens: 500,
     });
 
-    const aiMessage = response.choices?.[0]?.message?.content;
+    const aiMessage = completion.choices?.[0]?.message?.content;
 
     res.json({
       reply: {
         role: "assistant",
-        content: aiMessage || "No response from AI",
+        content: aiMessage || "I couldn't generate a response. Please try again.",
       },
+      usage: completion.usage
     });
 
-  } catch (error) {
-  console.error("🔥 FULL ERROR:", error);
+    console.log("✅ Response sent successfully");
 
-  res.status(500).json({
-    error: error.message,
-  });
-}
+  } catch (error) {
+    console.error("🔥 OpenAI API Error:", error);
+
+    let statusCode = 500;
+    let errorMessage = error.message;
+
+    if (error.status === 401) {
+      statusCode = 401;
+      errorMessage = "Invalid OpenAI API key";
+    } else if (error.status === 429) {
+      statusCode = 429;
+      errorMessage = "Rate limit exceeded. Please try again later.";
+    }
+
+    res.status(statusCode).json({
+      error: errorMessage,
+      type: error.type || "api_error"
+    });
+  }
 });
 
-// IMPORTANT: use Render's port
+// Handle preflight requests
+app.options("*", cors());
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error("💥 Server Error:", err);
+  res.status(500).json({ 
+    error: "Internal server error",
+    message: process.env.NODE_ENV === "development" ? err.message : undefined
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Allowed frontend: https://kiinai.vercel.app`);
 });
