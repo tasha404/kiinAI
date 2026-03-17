@@ -49,15 +49,12 @@ app.post("/chat", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("🔥 ERROR:", error);
+  console.error("🔥 FULL ERROR:", error);
 
-    res.status(500).json({
-      reply: {
-        role: "assistant",
-        content: "⚠️ Server error. Check backend.",
-      },
-    });
-  }
+  res.status(500).json({
+    error: error.message,
+  });
+}
 });
 
 // IMPORTANT: use Render's port
