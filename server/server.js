@@ -6,37 +6,44 @@ import OpenAI from "openai";
 dotenv.config();
 
 const app = express();
+
+// middleware
 app.use(cors());
 app.use(express.json());
 
+// test route (so browser doesn't show error)
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
+
+// OpenAI client
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
-    // 🧠 Call OpenAI
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are zenGPT, a calm and helpful AI assistant."
+          content: "You are zenGPT, a calm and helpful AI assistant.",
         },
-        ...messages
+        ...messages,
       ],
     });
 
-    // ✅ Safe extraction
     const aiMessage = response.choices?.[0]?.message?.content;
 
     res.json({
       reply: {
         role: "assistant",
-        content: aiMessage || "No response from AI"
-      }
+        content: aiMessage || "No response from AI",
+      },
     });
 
   } catch (error) {
@@ -45,13 +52,15 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({
       reply: {
         role: "assistant",
-        content: "⚠️ Server error. Check backend."
-      }
+        content: "⚠️ Server error. Check backend.",
+      },
     });
   }
 });
 
-// 🚀 Start server
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// IMPORTANT: use Render's port
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
