@@ -10,7 +10,13 @@ if (process.env.NODE_ENV !== "production") {
 const app = express();
 console.log("ENV CHECK:", process.env.OPENAI_API_KEY ? "FOUND" : "MISSING");
 // middleware
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
+
+app.options("*", cors()); // VERY IMPORTANT
 app.use(express.json());
 
 // test route (so browser doesn't show error)
