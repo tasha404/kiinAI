@@ -212,28 +212,43 @@ function App() {
     <div className="app">
       {/* 📁 SIDEBAR */}
       <div className={`sidebar ${sidebarOpen ? "" : "closed"}`}>
-  {/* TOP ICON */}
-  <div className="top-icon">☰</div>
+  {/* TOP BAR */}
+  <div className="top">
+    <div
+      className="menu-btn"
+      onClick={() => setSidebarOpen(!sidebarOpen)}
+    >
+      ☰
+    </div>
+
+    {sidebarOpen && <div className="logo">Zen</div>}
+  </div>
 
   {/* ACTIONS */}
-  <div className="sidebar-actions">
+  <div className="actions">
     <div className="action" onClick={newChat}>
-      ✏️ <span>New chat</span>
+      ✏️ {sidebarOpen && <span>New chat</span>}
     </div>
 
     <div className="action">
-      🔍 <span>Search chats</span>
+      🔍 {sidebarOpen && <span>Search chats</span>}
     </div>
   </div>
 
-  <div className="divider" />
-
-  {/* CHAT LIST */}
+  {/* CHATS */}
   <div className="chat-list">
     {history.map((h) => (
-      <div key={h.id} className="chat-row">
-        <span onClick={() => loadChat(h.id)}>{h.title}</span>
-        <button onClick={() => deleteChat(h.id)}>⋯</button>
+      <div
+        key={h.id}
+        className={`chat-row ${chatId === h.id ? "active" : ""}`}
+      >
+        <span onClick={() => loadChat(h.id)}>
+          {sidebarOpen ? h.title : "💬"}
+        </span>
+
+        {sidebarOpen && (
+          <button onClick={() => deleteChat(h.id)}>⋯</button>
+        )}
       </div>
     ))}
   </div>
@@ -241,7 +256,7 @@ function App() {
   {/* PROFILE */}
   <div className="profile" onClick={logout}>
     <div className="avatar">NA</div>
-    <span>Logout</span>
+    {sidebarOpen && <span>My Account</span>}
   </div>
 </div>
 
