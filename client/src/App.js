@@ -21,7 +21,7 @@ import {
   signOut
 } from "firebase/auth";
 
-// Icons (optional but nice)
+// Icons
 import { FiMenu, FiPlus, FiMessageSquare, FiLogOut } from "react-icons/fi";
 
 function App() {
@@ -35,6 +35,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
 
   // 📂 Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -43,6 +44,7 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setAuthError(""); // Clear any auth errors on state change
     });
     return () => unsubscribe();
   }, []);
@@ -158,6 +160,7 @@ function App() {
 
     } catch (error) {
       console.error(error);
+      setAuthError("Failed to send message. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -166,17 +169,19 @@ function App() {
   // 🔐 Auth functions
   const handleSignup = async () => {
     try {
+      setAuthError("");
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert(err.message);
+      setAuthError(err.message);
     }
   };
 
   const handleLogin = async () => {
     try {
+      setAuthError("");
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      alert(err.message);
+      setAuthError(err.message);
     }
   };
 
@@ -184,41 +189,96 @@ function App() {
     await signOut(auth);
   };
 
-  // 🔐 LOGIN SCREEN
-if (!user) {
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>zenGPT 🌿</h2>
+  // 🔐 PROFESSIONAL LOGIN SCREEN
+  if (!user) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <h2>
+            Welcome to <span>zenGPT</span> 🌿
+          </h2>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="auth-input"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          {/* Error Message */}
+          {authError && (
+            <div className="auth-error">
+              {authError}
+            </div>
+          )}
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="auth-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          {/* Email Input */}
+          <div className="auth-input-group">
+            <label>Email</label>
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">📧</span>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                className="auth-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />
+            </div>
+          </div>
 
-        <button className="auth-btn login" onClick={handleLogin}>
-          Login
-        </button>
+          {/* Password Input */}
+          <div className="auth-input-group">
+            <label>Password</label>
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">🔒</span>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="auth-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              />
+            </div>
+          </div>
 
-        <button className="auth-btn signup" onClick={handleSignup}>
-          Sign Up
-        </button>
+          {/* Forgot Password Link */}
+          <div className="auth-forgot">
+            <a href="#" onClick={(e) => e.preventDefault()}>
+              Forgot password?
+            </a>
+          </div>
+
+          {/* Buttons */}
+          <div className="auth-buttons">
+            <button className="auth-btn login" onClick={handleLogin}>
+              Log in
+            </button>
+            
+            {/* Divider */}
+            <div className="auth-divider">
+              <span className="auth-divider-line"></span>
+              <span>or</span>
+              <span className="auth-divider-line"></span>
+            </div>
+
+            <button className="auth-btn signup" onClick={handleSignup}>
+              Create new account
+            </button>
+          </div>
+
+          {/* Social Login */}
+          <div className="auth-social">
+            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>G</button>
+            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>f</button>
+            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>in</button>
+          </div>
+
+          {/* Terms */}
+          <div className="auth-terms">
+            By continuing, you agree to our <a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a> and <a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>.
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
+  // 💬 MAIN CHAT INTERFACE (when logged in)
   return (
     <div style={{ display: "flex", height: "100vh" }}>
 
