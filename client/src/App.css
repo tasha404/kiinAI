@@ -27,6 +27,7 @@ h1 {
   display: flex;
   flex-direction: column;
 }
+
 /* COMMON MESSAGE STYLE */
 .message {
   max-width: 75%;
@@ -42,7 +43,6 @@ h1 {
 .user {
   align-self: flex-end;
   background: #fbcfe8;
-  /* soft pink */
   color: #4b5563;
   border-bottom-right-radius: 6px;
 }
@@ -51,7 +51,6 @@ h1 {
 .bot {
   align-self: flex-start;
   background: #e5e7eb;
-  /* slightly darker gray */
   color: #374151;
   border-bottom-left-radius: 6px;
 }
@@ -79,7 +78,6 @@ button {
   border-radius: 20px;
   border: none;
   background: #f9a8d4;
-  /* pink button */
   color: #374151;
   cursor: pointer;
   transition: 0.2s;
@@ -132,8 +130,6 @@ button:hover {
   font-size: 14px;
   color: #222;
   transition: background 0.2s ease;
-
-  /* truncate like ChatGPT */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -248,14 +244,13 @@ button:hover {
   background: #eee;
 }
 
-/* ===== AUTH UI (NEW CLEAN DESIGN) ===== */
+/* ===== AUTH UI (UPDATED - ALL ELEMENTS SAME LENGTH) ===== */
 
 .auth-container {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-position: fixed;
   background: linear-gradient(135deg, #e0f7f4, #fce4ec);
 }
 
@@ -264,7 +259,6 @@ position: fixed;
   padding: 40px 30px;
   border-radius: 20px;
   width: 320px;
-
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
@@ -274,39 +268,39 @@ position: fixed;
   color: #444;
 }
 
-/* Inputs */
+/* Inputs - Full width */
 .auth-input {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
-
   border-radius: 10px;
   border: 1px solid #ddd;
   font-size: 14px;
-
   outline: none;
   transition: 0.2s;
+  box-sizing: border-box;
+  /* This ensures padding doesn't affect width */
 }
 
 .auth-input:focus {
   border-color: #f9a8d4;
 }
 
-/* Buttons */
+/* Buttons - Full width */
 .auth-btn {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
   border: none;
-
   font-size: 15px;
   cursor: pointer;
   margin-top: 10px;
-
   transition: 0.2s;
+  box-sizing: border-box;
+  /* This ensures padding doesn't affect width */
 }
 
-/* Login */
+/* Login button */
 .auth-btn.login {
   background: #f9a8d4;
   color: #374151;
@@ -316,7 +310,7 @@ position: fixed;
   background: #f472b6;
 }
 
-/* Signup */
+/* Signup button */
 .auth-btn.signup {
   background: transparent;
   color: #f472b6;
@@ -325,4 +319,9 @@ position: fixed;
 
 .auth-btn.signup:hover {
   background: #ffe4ef;
+}
+
+/* Make sure the first button doesn't have extra margin */
+.auth-btn:first-of-type {
+  margin-top: 5px;
 }
