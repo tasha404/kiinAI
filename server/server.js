@@ -16,7 +16,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-app.options("*", cors()); // VERY IMPORTANT
+app.use(cors());
 app.use(express.json());
 
 // test route (so browser doesn't show error)
