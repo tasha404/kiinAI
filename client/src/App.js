@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import ReactMarkdown from "react-markdown";
 
 // 🔥 Firebase
 import { auth, db } from "./firebase";
@@ -40,8 +39,6 @@ function App() {
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [history, setHistory] = useState([]);
-
-  const [loading, setLoading] = useState(false);
 
   // 🔐 auth listener
   useEffect(() => {
