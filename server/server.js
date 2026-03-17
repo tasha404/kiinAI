@@ -102,8 +102,8 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// Handle preflight requests
-app.options("*", cors());
+// ❌ REMOVE THIS LINE - it's causing the error
+// app.options("*", cors());
 
 // 404 handler
 app.use((req, res) => {
