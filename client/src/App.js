@@ -185,13 +185,16 @@ function App() {
   };
 
   // 🔐 LOGIN SCREEN
-  if (!user) {
-    return (
-      <div className="auth">
+if (!user) {
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
         <h2>zenGPT 🌿</h2>
 
         <input
+          type="email"
           placeholder="Email"
+          className="auth-input"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -199,15 +202,22 @@ function App() {
         <input
           type="password"
           placeholder="Password"
+          className="auth-input"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button onClick={handleLogin}>Login</button>
-        <button onClick={handleSignup}>Signup</button>
+        <button className="auth-btn login" onClick={handleLogin}>
+          Login
+        </button>
+
+        <button className="auth-btn signup" onClick={handleSignup}>
+          Sign Up
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>

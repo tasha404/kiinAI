@@ -247,3 +247,82 @@ button:hover {
   margin-top: auto;
   background: #eee;
 }
+
+/* ===== AUTH UI (NEW CLEAN DESIGN) ===== */
+
+.auth-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(135deg, #e0f7f4, #fce4ec);
+}
+
+.auth-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 20px;
+  width: 320px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 25px;
+  color: #444;
+}
+
+/* Inputs */
+.auth-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+
+  outline: none;
+  transition: 0.2s;
+}
+
+.auth-input:focus {
+  border-color: #f9a8d4;
+}
+
+/* Buttons */
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+
+  transition: 0.2s;
+}
+
+/* Login */
+.auth-btn.login {
+  background: #f9a8d4;
+  color: #374151;
+}
+
+.auth-btn.login:hover {
+  background: #f472b6;
+}
+
+/* Signup */
+.auth-btn.signup {
+  background: transparent;
+  color: #f472b6;
+  border: 1px solid #f472b6;
+}
+
+.auth-btn.signup:hover {
+  background: #ffe4ef;
+}
