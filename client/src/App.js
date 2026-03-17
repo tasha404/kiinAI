@@ -239,9 +239,9 @@ function App() {
 
           {/* Forgot Password Link */}
           <div className="auth-forgot">
-            <a href="#" onClick={(e) => e.preventDefault()}>
-              Forgot password?
-            </a>
+            <button className="link-btn">
+  Forgot password?
+</button>
           </div>
 
           {/* Buttons */}
@@ -269,13 +269,19 @@ function App() {
             <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>in</button>
           </div>
 
-          {/* Terms */}
           <div className="auth-terms">
-            By continuing, you agree to our <a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a> and <a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>.
-          </div>
+  By continuing, you agree to our{" "}
+  <button className="link-btn">
+    Terms of Service
+  </button>{" "}
+  and{" "}
+  <button className="link-btn">
+    Privacy Policy
+  </button>.
+</div>
         </div>
       </div>
-    );
+    );  
   }
 
   // 💬 MAIN CHAT INTERFACE (when logged in)

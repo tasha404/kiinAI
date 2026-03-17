@@ -512,3 +512,16 @@ button:hover {
   border-left: 4px solid #fc8181;
   text-align: left;
 }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
