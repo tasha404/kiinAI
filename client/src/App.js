@@ -193,94 +193,38 @@ function App() {
   if (!user) {
     return (
       <div className="auth-container">
-        <div className="auth-card">
-          <h2>
-            Welcome to <span>zenGPT</span> 🌿
-          </h2>
+  <div className="auth-card minimal">
+    <h2>zenGPT</h2>
 
-          {/* Error Message */}
-          {authError && (
-            <div className="auth-error">
-              {authError}
-            </div>
-          )}
+    {authError && (
+      <div className="auth-error">{authError}</div>
+    )}
 
-          {/* Email Input */}
-          <div className="auth-input-group">
-            <label>Email</label>
-            <div className="auth-input-wrapper">
-              <span className="auth-input-icon">📧</span>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="auth-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
-          </div>
+    <input
+      type="email"
+      placeholder="Email"
+      className="auth-input"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
 
-          {/* Password Input */}
-          <div className="auth-input-group">
-            <label>Password</label>
-            <div className="auth-input-wrapper">
-              <span className="auth-input-icon">🔒</span>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="auth-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
-          </div>
+    <input
+      type="password"
+      placeholder="Password"
+      className="auth-input"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
 
-          {/* Forgot Password Link */}
-          <div className="auth-forgot">
-            <button className="link-btn">
-  Forgot password?
-</button>
-          </div>
+    <button className="auth-btn primary" onClick={handleLogin}>
+      Log in
+    </button>
 
-          {/* Buttons */}
-          <div className="auth-buttons">
-            <button className="auth-btn login" onClick={handleLogin}>
-              Log in
-            </button>
-            
-            {/* Divider */}
-            <div className="auth-divider">
-              <span className="auth-divider-line"></span>
-              <span>or</span>
-              <span className="auth-divider-line"></span>
-            </div>
-
-            <button className="auth-btn signup" onClick={handleSignup}>
-              Create new account
-            </button>
-          </div>
-
-          {/* Social Login */}
-          <div className="auth-social">
-            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>G</button>
-            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>f</button>
-            <button className="auth-social-btn" onClick={(e) => e.preventDefault()}>in</button>
-          </div>
-
-          <div className="auth-terms">
-  By continuing, you agree to our{" "}
-  <button className="link-btn">
-    Terms of Service
-  </button>{" "}
-  and{" "}
-  <button className="link-btn">
-    Privacy Policy
-  </button>.
+    <button className="auth-btn secondary" onClick={handleSignup}>
+      Create account
+    </button>
+  </div>
 </div>
-        </div>
-      </div>
     );  
   }
 
