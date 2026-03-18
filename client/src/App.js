@@ -138,9 +138,10 @@ function App() {
 
   // 🚀 SEND MESSAGE
   const sendMessage = async () => {
-    if (!message.trim()) return;
+  if (!message.trim()) return;
 
-    const userMsg = { role: "user", content: message };
+  const currentMessage = message;
+  const userMsg = { role: "user", content: currentMessage };
 const updatedChat = [...chat, userMsg];
 
 setChat(updatedChat);
@@ -170,7 +171,7 @@ setChat((prev) => [...prev, aiMsg]);
       if (!currentChatId) {
         const docRef = await addDoc(collection(db, "sessions"), {
           uid: user.uid,
-          title: message.slice(0, 20),
+          title: currentMessage.slice(0, 20),
           createdAt: serverTimestamp(),
         });
 
@@ -181,11 +182,11 @@ setChat((prev) => [...prev, aiMsg]);
 
       // 💾 save messages
       await addDoc(collection(db, "messages"), {
-        chatId: currentChatId,
-        role: "user",
-        content: message,
-        createdAt: serverTimestamp(),
-      });
+  chatId: currentChatId,
+  role: "user",
+  content: currentMessage,
+  createdAt: serverTimestamp(),
+});
 
       await addDoc(collection(db, "messages"), {
         chatId: currentChatId,
