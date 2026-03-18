@@ -141,8 +141,9 @@ setLoading(true);
 
       const data = await res.json();
 
-      const aiMsg = { role: "assistant", content: data.reply };
-      setChat((prev) => [...prev, aiMsg]);
+
+const aiMsg = { role: "assistant", content: data.reply };
+setChat((prev) => [...prev, aiMsg]);
 
       let currentChatId = chatId;
 
