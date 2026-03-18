@@ -50,7 +50,11 @@ function App() {
     });
     return () => unsub();
   }, []);
-
+useEffect(() => {
+  if (chatId) {
+    loadChat(chatId);
+  }
+}, [chatId]);
   // 🔑 LOGIN
   const login = async () => {
     try {
@@ -262,9 +266,8 @@ setChat((prev) => [...prev, aiMsg]);
 >
   <span
   onClick={() => {
-    console.log("CLICKED CHAT:", h.id);
-    loadChat(h.id);
-  }}
+  setChatId(h.id);
+}}
 >
     {sidebarOpen ? h.title : "💬"}
   </span>
