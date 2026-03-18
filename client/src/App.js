@@ -22,7 +22,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-const API_URL = "https://zengpt-j99f.onrender.com/chat";
+const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
   const [user, setUser] = useState(null);
