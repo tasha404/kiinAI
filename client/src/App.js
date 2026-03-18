@@ -136,7 +136,7 @@ setLoading(true);
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ messages: [...chat, { role: "user", content: message }] }),
       });
 
       const data = await res.json();

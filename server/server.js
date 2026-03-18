@@ -29,20 +29,17 @@ app.get("/", (req, res) => {
 // ✅ Chat route
 app.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { messages } = req.body;
 
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        {
-          role: "system",
-          content: "You are a helpful, friendly, slightly cute AI assistant.",
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
+  {
+    role: "system",
+    content: "You are a helpful, friendly, slightly cute AI assistant.",
+  },
+  ...messages
+],
     });
 
     res.json({
