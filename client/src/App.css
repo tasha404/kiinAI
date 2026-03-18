@@ -380,3 +380,39 @@ body {
   background: #ff8fb1;
   color: white;
 }
+
+.message p {
+  margin: 6px 0;
+}
+
+.message h3 {
+  margin: 10px 0 5px;
+  font-size: 16px;
+}
+
+.message ul {
+  padding-left: 18px;
+}
+
+.message.assistant {
+  background: #e5e5ea;
+}
+
+/* ✨ typing animation */
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
+}
+
+.message.assistant:contains("thinking") {
+  animation: blink 1.2s infinite;
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-
+import ReactMarkdown from "react-markdown";
 // 🔥 Firebase
 import { auth, db } from "./firebase";
 import {
@@ -38,7 +38,7 @@ function App() {
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [history, setHistory] = useState([]);
-
+ const [loading, setLoading] = useState(false);
   // 🔐 auth listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -127,6 +127,9 @@ snap.forEach((doc) => {
     const userMsg = { role: "user", content: message };
     setChat((prev) => [...prev, userMsg]);
     setMessage("");
+
+setLoading(true);
+
     try {
       const res = await fetch(API_URL, {
         method: "POST",
@@ -275,12 +278,22 @@ snap.forEach((doc) => {
   ) : (
     <>
       <div className="chat-box">
-        {chat.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>
-            {msg.content}
-          </div>
-        ))}
-      </div>
+  {chat.map((msg, i) => (
+    <div key={i} className={`message ${msg.role}`}>
+      {msg.role === "assistant" ? (
+        <ReactMarkdown>{msg.content}</ReactMarkdown>
+      ) : (
+        msg.content
+      )}
+    </div>
+  ))}
+
+  {loading && (
+    <div className="message assistant loading">
+      thinking...
+    </div>
+  )}
+</div>
 
       <div className="input-box">
         <input
