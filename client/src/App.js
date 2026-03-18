@@ -18,6 +18,7 @@ import {
   doc,
   query,
   where,
+  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -89,7 +90,8 @@ function App() {
   const loadChat = async (id) => {
     const q = query(
   collection(db, "messages"),
-  where("chatId", "==", id)
+  where("chatId", "==", id),
+  orderBy("createdAt", "asc")
 );
 
     const snap = await getDocs(q);
