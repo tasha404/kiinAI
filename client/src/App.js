@@ -89,31 +89,36 @@ function App() {
   };
 
   // 📂 LOAD ONE CHAT
-  const loadChat = async (id) => {
+ const loadChat = async (id) => {
   console.log("Loading chat:", id);
 
-  setLoadingChat(true); // ✅ START loading
+  setLoadingChat(true);
 
-  const q = query(
-    collection(db, "messages"),
-    where("chatId", "==", id),
-    orderBy("createdAt", "asc")
-  );
+  try {
+    const q = query(
+      collection(db, "messages"),
+      where("chatId", "==", id),
+      orderBy("createdAt", "asc")
+    );
 
-  const snap = await getDocs(q);
+    const snap = await getDocs(q);
 
-  let msgs = [];
-  snap.forEach((doc) => {
-    msgs.push(doc.data());
-  });
+    let msgs = [];
+    snap.forEach((doc) => {
+      msgs.push(doc.data());
+    });
 
-  console.log("MESSAGES:", msgs);
+    console.log("MESSAGES:", msgs);
 
-  setChat(msgs);
-  setChatId(id);
+    setChat(msgs);
+    setChatId(id);
+  } catch (err) {
+    console.error("LOAD CHAT ERROR:", err);
+  }
 
-  setLoadingChat(false); // ✅ END loading
+  setLoadingChat(false); // ✅ ALWAYS RUN
 };
+
 
   // 🆕 NEW CHAT
   const newChat = () => {
