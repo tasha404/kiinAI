@@ -110,7 +110,7 @@ function App() {
 
     console.log("MESSAGES:", msgs);
 
-    setChat(msgs);
+    setChat([...msgs]);
     setChatId(id);
   } catch (err) {
     console.error("LOAD CHAT ERROR:", err);
@@ -305,7 +305,7 @@ setChat((prev) => [...prev, aiMsg]);
     <>
       <div className="chat-box">
   {chat.map((msg, i) => (
-    <div key={i} className={`message ${msg.role}`}>
+  <div key={chatId + i} className={`message ${msg.role}`}>
       {msg.role === "assistant" ? (
         <ReactMarkdown>{msg.content}</ReactMarkdown>
       ) : (
