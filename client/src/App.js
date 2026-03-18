@@ -18,7 +18,6 @@ import {
   doc,
   query,
   where,
-  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 
@@ -89,15 +88,17 @@ function App() {
   // 📂 LOAD ONE CHAT
   const loadChat = async (id) => {
     const q = query(
-      collection(db, "messages"),
-      where("chatId", "==", id),
-      orderBy("createdAt")
-    );
+  collection(db, "messages"),
+  where("chatId", "==", id)
+);
 
     const snap = await getDocs(q);
 
     let msgs = [];
-    snap.forEach((doc) => msgs.push(doc.data()));
+snap.forEach((doc) => {
+  const data = doc.data();
+  msgs.push(data);
+});
 
     setChat(msgs);
     setChatId(id);
@@ -233,7 +234,12 @@ function App() {
   key={h.id}
   className={`chat-row ${chatId === h.id ? "active" : ""}`}
 >
-  <span onClick={() => loadChat(h.id)}>
+  <span
+  onClick={() => {
+    console.log("CLICKED CHAT:", h.id);
+    loadChat(h.id);
+  }}
+>
     {sidebarOpen ? h.title : "💬"}
   </span>
 
