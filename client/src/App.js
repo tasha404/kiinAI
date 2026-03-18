@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
-import { useRef } from "react";
 import { auth, db } from "./firebase";
+import { useNavigate, useParams } from "react-router-dom";
+
+
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -25,6 +27,7 @@ import {
 const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   // 🔐 auth
@@ -35,13 +38,14 @@ function App() {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const [chatId, setChatId] = useState(null);
-  const chatIdRef = useRef(null);
+  
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [history, setHistory] = useState([]);
  const [loading, setLoading] = useState(false);
  const [loadingChat, setLoadingChat] = useState(false);
+const { chatId: urlChatId } = useParams();
 
   // 🔐 auth listener
   useEffect(() => {
@@ -52,12 +56,10 @@ function App() {
     return () => unsub();
   }, []);
 useEffect(() => {
-  chatIdRef.current = chatId;
-
-  if (chatId) {
-    loadChat(chatId);
+  if (urlChatId) {
+    loadChat(urlChatId);
   }
-}, [chatId]);
+}, [urlChatId]);
   // 🔑 LOGIN
   const login = async () => {
     try {
@@ -116,7 +118,6 @@ useEffect(() => {
       msgs.push(doc.data());
     });
 
-    if (id !== chatIdRef.current) return;
 
     setChat(msgs);
   } catch (err) {
@@ -265,13 +266,9 @@ setChat((prev) => [...prev, aiMsg]);
     {history.map((h) => (
       <div
   key={h.id}
-  className={`chat-row ${chatId === h.id ? "active" : ""}`}
+  className={`chat-row ${urlChatId === h.id ? "active" : ""}`}
 >
-  <span
-  onClick={() => {
-  setChatId(h.id);
-}}
->
+  <span onClick={() => navigate(`/chat/${h.id}`)}>
     {sidebarOpen ? h.title : "💬"}
   </span>
 
@@ -312,7 +309,7 @@ setChat((prev) => [...prev, aiMsg]);
     <>
       <div className="chat-box">
   {chat.map((msg, i) => (
-  <div key={chatId + i} className={`message ${msg.role}`}>
+  <div key={i} className={`message ${msg.role}`}>
       {msg.role === "assistant" ? (
         <ReactMarkdown>{msg.content}</ReactMarkdown>
       ) : (
