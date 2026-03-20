@@ -108,7 +108,7 @@ useEffect(() => {
     return (
       <div className="auth-page">
         <div className="auth-card">
-          <h2>💬 ZenGPT</h2>
+          <h2>KIIN</h2>
 
           <input
             placeholder="Email"
@@ -142,7 +142,7 @@ useEffect(() => {
       ☰
     </div>
 
-    {sidebarOpen && <div className="logo">Zen</div>}
+    {sidebarOpen && <div className="logo">Kiin AI</div>}
   </div>
 
   {/* ACTIONS */}
@@ -166,7 +166,7 @@ useEffect(() => {
       <div className="main">
   {chat.length === 0 ? (
     <div className="empty-state">
-      <h1>What can I help with?</h1>
+      <h1>What ki-in I do for you today ?</h1>
 
       <div className="center-input">
         <input
