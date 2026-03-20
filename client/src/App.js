@@ -108,7 +108,7 @@ useEffect(() => {
     return (
       <div className="auth-page">
         <div className="auth-card">
-          <h2>KIIn</h2>
+          <h2 style={{ fontFamily: 'CuteFont' }}>KIIn</h2>
 
           <input
             placeholder="Email"
