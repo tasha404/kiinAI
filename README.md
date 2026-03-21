@@ -37,4 +37,4 @@ The goal is to:
 - **Frontend:** React.js  
 - **Styling:** CSS  
 - **Backend (Planned):** Firebase , Railway 
-- **AI Integration:** (e.g. OpenAI API or custom model)
+- **AI Integration:** (OpenAI API)
