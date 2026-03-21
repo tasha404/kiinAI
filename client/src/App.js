@@ -106,36 +106,81 @@ const deleteChat = (id) => {
     setCurrentChatId(filtered[0].id);
   }
 };
+
+const generateTitle = (messages) => {
+  // only take USER messages
+  const userText = messages
+    .filter(m => m.role === "user")
+    .map(m => m.content)
+    .join(" ")
+    .toLowerCase();
+
+  // remove useless words
+  const cleaned = userText
+    .replace(/\b(hi|hello|hey|ok|thanks|thank you)\b/gi, "")
+    .trim();
+
+  if (!cleaned || cleaned.length < 5) return "New Chat";
+
+  // shorten nicely
+  return cleaned.slice(0, 30) + "...";
+};
+
+const generateAITitle = async (messages) => {
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "system",
+            content: "Summarize this conversation in 3-5 short words only."
+          },
+          ...messages.slice(0, 3) // only first few msgs
+        ],
+      }),
+    });
+
+    const data = await res.json();
+
+    return data.reply || "New Chat";
+  } catch (err) {
+    console.error(err);
+    return "New Chat";
+  }
+};
+
   // 🚀 SEND MESSAGE
-  const sendMessage = async () => {
+const sendMessage = async () => {
   if (!message.trim()) return;
 
   const userMsg = { role: "user", content: message };
-
   const updatedMessages = [...currentChat.messages, userMsg];
   const isFirstMessage = currentChat.messages.length === 0;
 
-  // update chat with loading
+  // 1️⃣ show loading
   setChats(prev =>
-  prev.map(chat =>
-    chat.id === currentChatId
-      ? {
-          ...chat,
-          title: isFirstMessage
-            ? userMsg.content.slice(0, 25)
-            : chat.title,
-          messages: [
-            ...updatedMessages,
-            { role: "assistant", content: "loading" }
-          ]
-        }
-      : chat
-  )
-);
+    prev.map(chat =>
+      chat.id === currentChatId
+        ? {
+            ...chat,
+            title: isFirstMessage ? "Thinking..." : chat.title,
+            messages: [
+              ...updatedMessages,
+              { role: "assistant", content: "loading" }
+            ]
+          }
+        : chat
+    )
+  );
 
   setMessage("");
 
   try {
+    // 2️⃣ fetch response
     const res = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -146,12 +191,19 @@ const deleteChat = (id) => {
 
     const data = await res.json();
 
-    // replace loading
+    // 3️⃣ generate AI title (only first message)
+    let newTitle = null;
+    if (isFirstMessage) {
+      newTitle = await generateAITitle(updatedMessages);
+    }
+
+    // 4️⃣ replace loading with real response
     setChats(prev =>
       prev.map(chat =>
         chat.id === currentChatId
           ? {
               ...chat,
+              title: newTitle || chat.title,
               messages: [
                 ...updatedMessages,
                 { role: "assistant", content: data.reply }
@@ -166,7 +218,6 @@ const deleteChat = (id) => {
     alert("Server error");
   }
 };
-
 
   // 🔐 AUTH PAGE
   if (!user) {
