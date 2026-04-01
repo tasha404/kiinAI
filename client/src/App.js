@@ -84,10 +84,10 @@ function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.type !== "text/plain") {
-      alert("Only .txt files supported for now");
-      return;
-    }
+    if (!file.name.toLowerCase().endsWith(".txt")) {
+  alert("Only .txt files supported for now");
+  return;
+}
 
     const text = await file.text();
 
@@ -107,6 +107,7 @@ function App() {
       id: newId,
       title: "New Chat",
       messages: []
+      
     };
     setChats(prev => [...prev, newChatObj]);
     setCurrentChatId(newId);
@@ -296,14 +297,33 @@ function App() {
             <h1>What ki-in I do for you today?</h1>
 
             <div className="center-input">
-              <input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Ask anything"
-              />
-              <button onClick={sendMessage}>↑</button>
-            </div>
+
+  {/* FILE BUTTON */}
+  <input
+  id="fileUpload"
+  type="file"
+  accept=".txt"
+  style={{ display: "none" }}
+  onChange={handleFileUpload}
+/>
+
+<div
+  className="upload-btn"
+  onClick={() => document.getElementById("fileUpload").click()}
+>
+  <BsPaperclip />
+</div>
+
+  {/* INPUT */}
+  <input
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+    placeholder="Ask anything"
+  />
+
+  <button onClick={sendMessage}>↑</button>
+</div>
           </div>
         ) : (
           <>
@@ -327,10 +347,20 @@ function App() {
             </div>
 
             <div className="input-box">
-              <label className="upload-btn">
-                <BsPaperclip />
-                <input type="file" accept=".txt" hidden onChange={handleFileUpload} />
-              </label>
+              <input
+  id="fileUpload"
+  type="file"
+  accept=".txt"
+  style={{ display: "none" }}
+  onChange={handleFileUpload}
+/>
+
+<div
+  className="upload-btn"
+  onClick={() => document.getElementById("fileUpload").click()}
+>
+  <BsPaperclip />
+</div>
 
               <input
                 value={message}
