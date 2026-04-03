@@ -1,0 +1,44 @@
+/* layout */
+.flip-clock {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* unit */
+.flip-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* card */
+.flip-card {
+    width: 260px;
+    height: 240px;
+    border-radius: 24px;
+    background: #111827;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* number */
+.number {
+    font-size: 110px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+/* label */
+.label {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #9ca3af;
+}

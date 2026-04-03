@@ -415,3 +415,119 @@ body {
     text-align: center;
   }
 }
+
+
+/* ⏰ FLIP CLOCK */
+/* ===== POMODORO PAGE ===== */
+.pomodoro {
+  min-height: 100vh;
+  padding: 60px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ✅ CENTER EVERYTHING */
+
+  background: #f5f5f7;
+  color: #fff;
+}
+/* Title */
+.pomodoro h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #4f8cff;
+  /* your app accent */
+  margin-bottom: 5px;
+}
+
+/* Subtitle */
+.pomodoro p {
+  color: #9ca3af;
+  margin-bottom: 40px;
+}
+
+/* ===== CONTROLS ===== */
+.controls {
+  margin-top: 50px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+/* buttons */
+.controls button {
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  background: #1a1f2b;
+  color: #cbd5e1;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.controls button:hover {
+  background: #2a3142;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* primary (Start button) */
+.controls button:first-child {
+  background: #4f8cff;
+  color: #fff;
+}
+
+.controls button:first-child:hover {
+  background: #3a73d9;
+}
+
+.sound-controls {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sound-controls p {
+  width: 100%;
+  text-align: center;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.sound-controls button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #1a1f2b;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.sound-controls button:hover {
+  background: #2a3142;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th {
+  background: #1f2937;
+  color: white;
+  text-align: left;
+}
+
+td {
+  background: white;
+}
+
+tr:nth-child(even) td {
+  background: #f3f4f6;
+}
