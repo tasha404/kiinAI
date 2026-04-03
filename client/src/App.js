@@ -41,6 +41,7 @@ function App() {
 
   // 📁 sidebar
 const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // 🍅 STUDY MODE (Pomodoro)
   const [time, setTime] = useState(1500); // 25 minutes in seconds
@@ -121,19 +122,21 @@ const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
     setChats([{ id: newId, title: "New Chat", messages: [] }]);
     setCurrentChatId(newId);
   };
+
 useEffect(() => {
   const handleResize = () => {
-    if (window.innerWidth <= 768) {
-      setSidebarOpen(false);
-    } else {
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
+
+    if (!mobile) {
       setSidebarOpen(true);
     }
   };
 
   window.addEventListener("resize", handleResize);
-
   return () => window.removeEventListener("resize", handleResize);
 }, []);
+
   // 📂 FILE UPLOAD (MULTI FILE)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -375,7 +378,10 @@ setChats(prev =>
   if (mode === "study") {
     return (
       <div className="app">
-        <div className={`sidebar ${sidebarOpen ? "" : "closed"}`}>
+        <div className={`sidebar 
+  ${sidebarOpen ? "open" : ""} 
+  ${isMobile && !sidebarOpen ? "mini" : ""}
+`}>
           <div className="top">
             <div className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
               <BsLayoutSidebar />
@@ -440,7 +446,10 @@ setChats(prev =>
 
   return (
     <div className="app">
-      <div className={`sidebar ${sidebarOpen ? "" : "closed"}`}>
+      <div className={`sidebar 
+  ${sidebarOpen ? "open" : ""} 
+  ${isMobile && !sidebarOpen ? "mini" : ""}
+`}>
         <div className="top">
           <div className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <BsLayoutSidebar />
