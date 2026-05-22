@@ -1,30 +1,38 @@
 @font-face {
   font-family: 'CuteFont';
   src: url('./assets/fonts/Wordstaken.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
 }
 
 /* ========================= */
 /* 🌤 GLOBAL */
 /* ========================= */
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f5f5f7;
+  overflow: hidden;
 }
 
 /* ========================= */
-/* 🧱 APP LAYOUT */
+/* 🧱 APP */
 /* ========================= */
+
 .app {
   display: flex;
   height: 100vh;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* ========================= */
 /* 🔐 AUTH */
 /* ========================= */
+
 .auth-page {
   height: 100vh;
   display: flex;
@@ -33,20 +41,20 @@ body {
 }
 
 .auth-card {
-  background: #fff;
+  background: white;
   padding: 35px 30px;
   border-radius: 18px;
   width: 300px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
 }
 
 .auth-card h2 {
   text-align: center;
   margin-bottom: 25px;
-  font-weight: 500;
-  
+  font-family: "CuteFont";
+  font-size: 40px;
 }
 
 .auth-card input {
@@ -63,21 +71,16 @@ body {
 
 .auth-card button {
   padding: 12px;
-  margin-top: 5px;
-  border-radius: 10px;
   border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 5px;
   background: #ff8fb1;
   color: white;
-  cursor: pointer;
 }
 
 .auth-card button:hover {
   background: #ff6f9c;
-}
-
-.auth-card button:last-child {
-  background: transparent;
-  color: #888;
 }
 
 /* ========================= */
@@ -85,27 +88,39 @@ body {
 /* ========================= */
 
 .sidebar {
-  width: 220px;
+  width: 200px;
+  min-width: 200px;
   height: 100vh;
-  /* 🔥 required */
   background: #f7f7f8;
-  padding: 12px;
+  border-right: 1px solid #e5e5e5;
 
   display: flex;
   flex-direction: column;
 
-  border-right: 1px solid #e5e5e5;
-  transition: width 0.25s ease;
+  padding: 12px;
+
+  transition:
+    width 0.25s ease,
+    min-width 0.25s ease,
+    padding 0.25s ease;
 }
 
-/* MINI (collapsed) */
+/* CLOSED DESKTOP */
+.sidebar:not(.open) {
+  width: 70px;
+  min-width: 70px;
+}
+
+/* MOBILE HIDDEN */
 .sidebar.mini {
   width: 70px;
+  min-width: 70px;
 }
 
-/* MOBILE OPEN */
+/* OPEN */
 .sidebar.open {
-  width: 220px;
+  width: 200px;
+  min-width: 200px;
 }
 
 /* ========================= */
@@ -116,25 +131,32 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
 .menu-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+
+  border-radius: 10px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
+
+  flex-shrink: 0;
 }
 
 .menu-btn:hover {
-  background: #e5e5ea;
+  background: #e9e9ee;
 }
 
 .logo {
+  font-size: 18px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ========================= */
@@ -144,21 +166,49 @@ body {
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 6px;
 }
 
 .action {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
-  border-radius: 10px;
+
+  padding: 11px 12px;
+  border-radius: 12px;
+
   cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .action:hover {
-  background: #e5e5ea;
+  background: #e9e9ee;
+}
+
+.action span {
+  white-space: nowrap;
+}
+
+/* ========================= */
+/* MINI SIDEBAR */
+/* ========================= */
+
+.sidebar:not(.open) .logo,
+.sidebar:not(.open) .action span,
+.sidebar:not(.open) .chat-title,
+.sidebar:not(.open) .profile span {
+  display: none;
+}
+
+.sidebar:not(.open) .top,
+.sidebar:not(.open) .action,
+.sidebar:not(.open) .profile,
+.sidebar:not(.open) .chat-item {
+  justify-content: center;
+}
+
+.sidebar:not(.open) .chat-item {
+  padding: 10px 0;
 }
 
 /* ========================= */
@@ -167,35 +217,37 @@ body {
 
 .chat-list {
   flex: 1;
-  /* 🔥 pushes logout down */
   overflow-y: auto;
+  margin-top: 15px;
 }
 
 .chat-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
+  gap: 8px;
+
+  padding: 10px;
   border-radius: 10px;
+
   cursor: pointer;
 }
 
 .chat-item:hover {
-  background: #e5e5ea;
+  background: #e9e9ee;
 }
 
 .chat-title {
   flex: 1;
   font-size: 14px;
+
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-/* delete button */
 .delete-btn {
-  background: transparent;
   border: none;
+  background: transparent;
   cursor: pointer;
   display: none;
 }
@@ -205,215 +257,147 @@ body {
 }
 
 /* ========================= */
-/* LOGOUT */
+/* PROFILE */
 /* ========================= */
 
 .profile {
   margin-top: auto;
-  /* 🔥 KEY */
+
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
+
+  padding: 12px;
+  border-radius: 12px;
+
   cursor: pointer;
 }
 
 .profile:hover {
-  background: #e5e5ea;
-}
-
-
-
-/* DESKTOP MINI SIDEBAR FIX */
-@media (min-width: 769px) {
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    /* 🔥 REQUIRED */
-  }
-
-  .chat-list {
-    flex: 1;
-    /* 🔥 THIS pushes logout down */
-  }
-
-  .sidebar.mini .profile {
-    margin-top: auto;
-    /* 🔥 KEY FIX */
-    justify-content: center;
-  }
-
-  .sidebar.mini {
-    width: 70px;
-    align-items: center;
-  }
-
-  .sidebar.mini .top {
-    justify-content: center;
-  }
-
-  .sidebar.mini .actions {
-    margin-top: 20px;
-    gap: 20px;
-    /* 🔥 evenly spaced */
-  }
-
-  .sidebar.mini .action {
-    justify-content: center;
-    padding: 12px;
-  }
-
-}
-
-.top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-
-
-.menu-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.menu-btn:hover {
-  background: #e5e5ea;
-}
-
-.logo {
-  font-weight: 600;
-}
-
-/* actions */
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.action {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.action:hover {
-  background: #e5e5ea;
-}
-
-/* profile */
-.profile {
-  margin-top: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.profile:hover {
-  background: #e5e5ea;
+  background: #e9e9ee;
 }
 
 /* ========================= */
-/* 💬 MAIN CHAT */
+/* 💬 MAIN */
 /* ========================= */
+
 .main {
   flex: 1;
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
-  background: #f7f7f8;
-}
 
-/* chat area */
-.chat-box {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  overflow-y: auto;
-}
+  background: #f5f5f7;
 
-/* chat item row */
-.chat-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  /* text left, icon right */
-  padding: 8px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.chat-item:hover {
-  background: #e5e5ea;
-}
-
-/* chat title */
-.chat-title {
-  flex: 1;
-  text-align: left;
-  /* 🔥 FIX: no more centered text */
-  font-size: 14px;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
-/* upload button */
-.upload-btn {
-  cursor: pointer;
+
+/* ========================= */
+/* EMPTY STATE */
+/* ========================= */
+
+.empty-state {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 20px;
+}
+
+.empty-state h1 {
+  font-size: 52px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* ========================= */
+/* CENTER INPUT */
+/* ========================= */
+
+.center-input {
+  width: 100%;
+  max-width: 620px;
+
   display: flex;
   align-items: center;
+  gap: 12px;
+
+  background: white;
+
+  padding: 12px 16px;
+  border-radius: 999px;
+
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+}
+
+.center-input input {
+  flex: 1;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 15px;
+}
+
+.center-input button {
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #ff8fb1;
+  color: white;
+
+  cursor: pointer;
+
+  flex-shrink: 0;
+}
+
+.center-input button:hover {
+  background: #ff6f9c;
+}
+
+.upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
   font-size: 18px;
 }
 
-.file-indicator {
-  padding: 6px 12px;
-  font-size: 12px;
-  background: #fff3f6;
-  border-bottom: 1px solid #eee;
+/* ========================= */
+/* CHAT */
+/* ========================= */
+
+.chat-box {
+  flex: 1;
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 25px;
 }
 
-/* delete button */
-.delete-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: none;
-  /* 👈 hidden by default */
-}
-
-/* show ONLY on hover */
-.chat-item:hover .delete-btn {
-  display: block;
-}
-
-/* messages */
 .message {
-  max-width: 70%;
-  padding: 12px 16px;
+  max-width: 75%;
+
+  padding: 14px 18px;
   border-radius: 18px;
-  margin-bottom: 10px;
-  font-size: 14px;
-  line-height: 1.4;
+
+  margin-bottom: 12px;
+
+  line-height: 1.5;
+  font-size: 15px;
 }
 
 .message.user {
@@ -426,43 +410,45 @@ body {
   align-self: flex-start;
 }
 
-/* markdown spacing */
 .message p {
   margin: 6px 0;
 }
 
-.message h3 {
-  margin: 10px 0 5px;
-}
-
-.message ul {
-  padding-left: 18px;
-}
-
 /* ========================= */
-/* ✨ INPUT */
+/* INPUT */
 /* ========================= */
+
 .input-box {
   display: flex;
+  align-items: center;
   gap: 10px;
+
   padding: 15px;
+
   background: white;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #ececec;
 }
 
 .input-box input {
   flex: 1;
-  padding: 12px;
-  border-radius: 20px;
+
   border: 1px solid #ddd;
   outline: none;
+
+  padding: 12px 16px;
+
+  border-radius: 999px;
 }
 
 .input-box button {
-  background: #ff8fb1;
   border: none;
-  padding: 10px 16px;
-  border-radius: 20px;
+
+  background: #ff8fb1;
+  color: white;
+
+  padding: 12px 18px;
+  border-radius: 999px;
+
   cursor: pointer;
 }
 
@@ -471,52 +457,9 @@ body {
 }
 
 /* ========================= */
-/* 🧠 EMPTY STATE */
+/* LOADING */
 /* ========================= */
-.empty-state {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
 
-.empty-state h1 {
-  font-size: 28px;
-  font-weight: 500;
-  margin-bottom: 25px;
-}
-
-.center-input {
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 30px;
-  padding: 10px 15px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-}
-
-.center-input input {
-  flex: 1;
-  border: none;
-  outline: none;
-}
-
-.center-input button {
-  background: #ff8fb1;
-  border: none;
-  color: white;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-}
-
-/* ========================= */
-/* ✨ LOADING DOTS */
-/* ========================= */
 @keyframes blink {
 
   0%,
@@ -530,12 +473,16 @@ body {
 }
 
 .loading span {
-  display: inline-block;
   width: 6px;
   height: 6px;
+
   margin: 0 2px;
-  background: #999;
+
+  display: inline-block;
+
   border-radius: 50%;
+  background: #999;
+
   animation: blink 1.4s infinite;
 }
 
@@ -548,227 +495,135 @@ body {
 }
 
 /* ========================= */
-/* 📱 MOBILE */
+/* POMODORO */
 /* ========================= */
-@media (max-width: 768px) {
-  .app {
-    flex-direction: row;
-  }
 
-
-  .chat-box {
-    padding: 15px;
-  }
-
-  .message {
-    max-width: 85%;
-    font-size: 15px;
-  }
-
-  .input-box input {
-    font-size: 16px;
-  }
-
-  .empty-state h1 {
-    font-size: 20px;
-    text-align: center;
-  }
-}
-
-
-/* ⏰ FLIP CLOCK */
-/* ===== POMODORO PAGE ===== */
 .pomodoro {
   min-height: 100vh;
-  padding: 60px;
+
+  padding: 60px 20px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* ✅ CENTER EVERYTHING */
-
-  background: #f5f5f7;
-  color: #fff;
 }
-/* Title */
+
 .pomodoro h1 {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 42px;
   color: #4f8cff;
-  /* your app accent */
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
-/* Subtitle */
-.pomodoro p {
-  color: #9ca3af;
-  margin-bottom: 40px;
-}
-
-/* ===== CONTROLS ===== */
 .controls {
-  margin-top: 50px;
   display: flex;
   gap: 15px;
-  justify-content: center;
+  margin-top: 40px;
 }
 
-/* buttons */
-.controls button {
-  padding: 12px 22px;
-  border-radius: 12px;
+.controls button,
+.sound-controls button {
   border: none;
-  background: #1a1f2b;
-  color: #cbd5e1;
-  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+
+  padding: 12px 18px;
+
+  border-radius: 12px;
+
+  background: #1a1f2b;
+  color: white;
 }
 
-.controls button:hover {
-  background: #2a3142;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-/* primary (Start button) */
 .controls button:first-child {
   background: #4f8cff;
-  color: #fff;
-}
-
-.controls button:first-child:hover {
-  background: #3a73d9;
 }
 
 .sound-controls {
-  margin-top: 30px;
+  margin-top: 25px;
+
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.sound-controls p {
-  width: 100%;
-  text-align: center;
-  color: #9ca3af;
-  margin-bottom: 10px;
-}
-
-.sound-controls button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  background: #1a1f2b;
-  color: #cbd5e1;
-  cursor: pointer;
-}
-
-.sound-controls button:hover {
-  background: #2a3142;
-}
-
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin-top: 12px;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-th {
-  background: #1f2937;
-  color: white;
-  text-align: left;
-}
-
-td {
-  background: white;
-}
-
-tr:nth-child(even) td {
-  background: #f3f4f6;
-}
-
+/* ========================= */
+/* MOBILE */
+/* ========================= */
 
 @media (max-width: 768px) {
+
+  .sidebar {
+    width: 70px;
+    min-width: 70px;
+  }
+
+  .sidebar.open {
+    width: 190px;
+    min-width: 190px;
+  }
+
+  .empty-state h1 {
+    font-size: 34px;
+  }
+
+  .center-input {
+    max-width: 95%;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .chat-box {
+    padding: 15px;
+  }
+
+  .input-box {
+    padding: 12px;
+  }
+
   .pomodoro {
     padding: 30px 15px;
   }
 
   .pomodoro h1 {
-    font-size: 22px;
+    font-size: 28px;
     text-align: center;
-  }
-
-  .pomodoro p {
-    text-align: center;
-    font-size: 14px;
   }
 
   .controls {
     flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .controls button {
-    flex: 1;
-    min-width: 90px;
-  }
-}
-
-/* 📱 MINI SIDEBAR (like your left image) */
-@media (max-width: 768px) {
-  .sidebar {
-      width: 150px;
-      transition: 0.25s ease;
-    }
-  
-    /* mini */
-    .sidebar.mini {
-      width: 60px;
-    }
-  
-    /* open */
-    .sidebar.open {
-      width: 220px;
-    }
-
-  /* ICON CENTER */
-  .sidebar.mini .action {
-    justify-content: center;
-  }
-
-  /* HIDE TEXT */
-  .sidebar.mini span {
-    display: none;
-  }
-
-  /* TOP BAR ALIGN */
-  .sidebar.mini .top {
-    justify-content: center;
-  }
-
-  /* LOGO HIDE */
-  .sidebar.mini .logo {
-    display: none;
-  }
-
-  /* PROFILE CENTER */
-  .sidebar.mini .profile {
     justify-content: center;
   }
 }
 
-@media (max-width: 768px) {
-  .app {
-    flex-direction: row;
-    /* IMPORTANT */
-  }
+/* ========================= */
+/* MODE SWITCHER */
+/* ========================= */
 
-  .main {
-    flex: 1;
-    min-width: 0;
-  }
+.mode-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.action.active-mode {
+  background: #ffe4ee;
+  color: #ff6f9c;
+  font-weight: 500;
+}
+
+.action.active-mode:hover {
+  background: #ffd6e7;
+}
+
+/* ========================= */
+/* ACTIVE CHAT ITEM */
+/* ========================= */
+
+.chat-item.active {
+  background: #e9e9ee;
 }
