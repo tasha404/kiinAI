@@ -1,9 +1,12 @@
 /* layout */
 .flip-clock {
     display: flex;
-    gap: 40px;
+    gap: clamp(12px, 4vw, 40px);
+    /* gap shrinks on small screens */
     justify-content: center;
     align-items: center;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 /* unit */
@@ -13,11 +16,11 @@
     align-items: center;
 }
 
-/* card */
+/* card — uses clamp() so it scales between phone and desktop */
 .flip-card {
-    width: 260px;
-    height: 240px;
-    border-radius: 24px;
+    width: clamp(90px, 22vw, 260px);
+    height: clamp(80px, 20vw, 240px);
+    border-radius: clamp(12px, 2vw, 24px);
     background: #111827;
 
     display: flex;
@@ -31,48 +34,16 @@
 
 /* number */
 .number {
-    font-size: 110px;
+    font-size: clamp(36px, 9vw, 110px);
     font-weight: 600;
     color: #e5e7eb;
+    line-height: 1;
 }
 
 /* label */
 .label {
-    margin-top: 12px;
-    font-size: 12px;
+    margin-top: clamp(6px, 1vw, 12px);
+    font-size: clamp(10px, 1.2vw, 12px);
     color: #9ca3af;
-}
-
-/* 📱 MOBILE FIX */
-@media (max-width: 768px) {
-    .flip-clock {
-        gap: 15px;
-    }
-
-    .flip-card {
-        width: 120px;
-        height: 110px;
-        border-radius: 16px;
-    }
-
-    .number {
-        font-size: 48px;
-    }
-
-    .label {
-        font-size: 10px;
-        margin-top: 6px;
-    }
-}
-
-/* 📱 SMALL PHONES */
-@media (max-width: 480px) {
-    .flip-card {
-        width: 90px;
-        height: 90px;
-    }
-
-    .number {
-        font-size: 36px;
-    }
+    letter-spacing: 0.05em;
 }

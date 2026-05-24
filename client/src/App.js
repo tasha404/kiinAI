@@ -32,6 +32,7 @@ const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const bottomRef = useRef(null);
   const [mode, setMode] = useState("normal");
 
@@ -79,6 +80,7 @@ function App() {
           setCurrentChatId(docRef.id);
         }
       }
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -156,6 +158,12 @@ function App() {
 
   // 💬 New / Delete chat
   const newChat = async () => {
+    // Don't create another empty chat if current one is already empty
+    const current = chats.find(c => c.id === currentChatId);
+    if (current && current.messages.length === 0 && mode !== "study") {
+      setCurrentChatId(current.id);
+      return;
+    }
     const chatsRef = collection(db, "users", user.uid, "chats");
     const newChatObj = { title: "New Chat", messages: [] };
     const docRef = await addDoc(chatsRef, newChatObj);
@@ -348,6 +356,8 @@ function App() {
   );
 
   // ─── AUTH PAGE ────────────────────────────────────────────────
+  if (authLoading) return null; // wait silently — Firebase is checking the session
+
   if (!user) {
     return (
       <div className="auth-page">
@@ -365,6 +375,10 @@ function App() {
   // ─── MAIN APP ─────────────────────────────────────────────────
   return (
     <div className="app">
+      {/* Dim backdrop when sidebar is open on mobile */}
+      {isMobile && sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
       <Sidebar />
 
       <div className="main">

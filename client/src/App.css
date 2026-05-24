@@ -15,7 +15,10 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f5f5f7;
+  /* prevent scroll bleed on mobile */
   overflow: hidden;
+  /* safe areas for notched phones */
+  padding-env: safe-area-inset-top safe-area-inset-right safe-area-inset-bottom safe-area-inset-left;
 }
 
 /* ========================= */
@@ -25,8 +28,11 @@ body {
 .app {
   display: flex;
   height: 100vh;
+  height: 100dvh;
+  /* dynamic viewport height — fixes mobile browser chrome */
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 /* ========================= */
@@ -35,16 +41,19 @@ body {
 
 .auth-page {
   height: 100vh;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
 }
 
 .auth-card {
   background: white;
   padding: 35px 30px;
   border-radius: 18px;
-  width: 300px;
+  width: 100%;
+  max-width: 320px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
@@ -63,6 +72,8 @@ body {
   border-radius: 10px;
   border: 1px solid #e5e5e5;
   outline: none;
+  font-size: 16px;
+  /* prevents iOS zoom-on-focus */
 }
 
 .auth-card input:focus {
@@ -77,6 +88,7 @@ body {
   margin-top: 5px;
   background: #ff8fb1;
   color: white;
+  font-size: 15px;
 }
 
 .auth-card button:hover {
@@ -91,6 +103,7 @@ body {
   width: 200px;
   min-width: 200px;
   height: 100vh;
+  height: 100dvh;
   background: #f7f7f8;
   border-right: 1px solid #e5e5e5;
 
@@ -98,11 +111,18 @@ body {
   flex-direction: column;
 
   padding: 12px;
+  /* safe area: left edge on notched phones */
+  padding-left: max(12px, env(safe-area-inset-left));
 
   transition:
     width 0.25s ease,
     min-width 0.25s ease,
     padding 0.25s ease;
+
+  /* always on top of content, not pushing it */
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
 }
 
 /* CLOSED DESKTOP */
@@ -111,16 +131,56 @@ body {
   min-width: 70px;
 }
 
-/* MOBILE HIDDEN */
-.sidebar.mini {
-  width: 70px;
-  min-width: 70px;
+/* MOBILE: sidebar slides over content */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    z-index: 200;
+    width: 70px;
+    min-width: 70px;
+    box-shadow: none;
+    transition:
+      width 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .sidebar.open {
+    width: 200px;
+    min-width: 200px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  }
 }
 
-/* OPEN */
-.sidebar.open {
-  width: 200px;
-  min-width: 200px;
+/* ========================= */
+/* MOBILE OVERLAY (backdrop) */
+/* ========================= */
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 199;
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ========================= */
@@ -178,7 +238,7 @@ body {
   border-radius: 12px;
 
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .action:hover {
@@ -190,7 +250,7 @@ body {
 }
 
 /* ========================= */
-/* MINI SIDEBAR */
+/* MINI SIDEBAR (icons only) */
 /* ========================= */
 
 .sidebar:not(.open) .logo,
@@ -271,6 +331,8 @@ body {
   border-radius: 12px;
 
   cursor: pointer;
+  /* safe area bottom padding for home-bar phones */
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
 .profile:hover {
@@ -293,6 +355,15 @@ body {
   overflow: hidden;
 }
 
+/* On mobile the sidebar is fixed, so main takes full width */
+@media (max-width: 768px) {
+  .main {
+    /* leave room for the collapsed icon sidebar (70px) */
+    margin-left: 70px;
+    width: calc(100% - 70px);
+  }
+}
+
 /* ========================= */
 /* EMPTY STATE */
 /* ========================= */
@@ -306,13 +377,17 @@ body {
   align-items: center;
 
   padding: 20px;
+  overflow: hidden;
 }
 
 .empty-state h1 {
-  font-size: 52px;
+  font-size: clamp(22px, 4vw, 52px);
+  /* scales smoothly */
   font-weight: 600;
   margin-bottom: 30px;
   text-align: center;
+  line-height: 1.2;
+  padding: 0 8px;
 }
 
 /* ========================= */
@@ -325,11 +400,11 @@ body {
 
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 
   background: white;
 
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 999px;
 
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
@@ -337,6 +412,8 @@ body {
 
 .center-input input {
   flex: 1;
+  min-width: 0;
+  /* prevent overflow */
 
   border: none;
   outline: none;
@@ -346,9 +423,16 @@ body {
   font-size: 15px;
 }
 
+/* prevent iOS zoom */
+@media (max-width: 768px) {
+  .center-input input {
+    font-size: 16px;
+  }
+}
+
 .center-input button {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
 
   border: none;
   border-radius: 50%;
@@ -359,6 +443,10 @@ body {
   cursor: pointer;
 
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
 .center-input button:hover {
@@ -372,6 +460,7 @@ body {
 
   cursor: pointer;
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 /* ========================= */
@@ -381,6 +470,8 @@ body {
 .chat-box {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* smooth scroll on iOS */
 
   display: flex;
   flex-direction: column;
@@ -398,6 +489,9 @@ body {
 
   line-height: 1.5;
   font-size: 15px;
+
+  word-break: break-word;
+  /* prevent long words overflowing */
 }
 
 .message.user {
@@ -414,6 +508,16 @@ body {
   margin: 6px 0;
 }
 
+/* code blocks inside messages */
+.message pre {
+  overflow-x: auto;
+  max-width: 100%;
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+}
+
 /* ========================= */
 /* INPUT */
 /* ========================= */
@@ -423,7 +527,9 @@ body {
   align-items: center;
   gap: 10px;
 
-  padding: 15px;
+  padding: 12px 15px;
+  /* safe area bottom for home-bar phones */
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
 
   background: white;
   border-top: 1px solid #ececec;
@@ -431,13 +537,22 @@ body {
 
 .input-box input {
   flex: 1;
+  min-width: 0;
 
   border: 1px solid #ddd;
   outline: none;
 
-  padding: 12px 16px;
+  padding: 11px 16px;
 
   border-radius: 999px;
+  font-size: 15px;
+}
+
+/* prevent iOS zoom */
+@media (max-width: 768px) {
+  .input-box input {
+    font-size: 16px;
+  }
 }
 
 .input-box button {
@@ -446,10 +561,12 @@ body {
   background: #ff8fb1;
   color: white;
 
-  padding: 12px 18px;
+  padding: 11px 18px;
   border-radius: 999px;
 
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .input-box button:hover {
@@ -499,25 +616,32 @@ body {
 /* ========================= */
 
 .pomodoro {
-  min-height: 100vh;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
-  padding: 60px 20px;
+  padding: 50px 20px;
+  padding-bottom: max(50px, env(safe-area-inset-bottom));
 
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0;
 }
 
 .pomodoro h1 {
-  font-size: 42px;
+  font-size: clamp(24px, 4vw, 42px);
   color: #4f8cff;
   margin-bottom: 10px;
+  text-align: center;
 }
 
 .controls {
   display: flex;
-  gap: 15px;
-  margin-top: 40px;
+  gap: 12px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .controls button,
@@ -525,12 +649,13 @@ body {
   border: none;
   cursor: pointer;
 
-  padding: 12px 18px;
+  padding: 12px 20px;
 
   border-radius: 12px;
 
   background: #1a1f2b;
   color: white;
+  font-size: 14px;
 }
 
 .controls button:first-child {
@@ -544,57 +669,15 @@ body {
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
 }
 
-/* ========================= */
-/* MOBILE */
-/* ========================= */
-
-@media (max-width: 768px) {
-
-  .sidebar {
-    width: 70px;
-    min-width: 70px;
-  }
-
-  .sidebar.open {
-    width: 190px;
-    min-width: 190px;
-  }
-
-  .empty-state h1 {
-    font-size: 34px;
-  }
-
-  .center-input {
-    max-width: 95%;
-  }
-
-  .message {
-    max-width: 90%;
-  }
-
-  .chat-box {
-    padding: 15px;
-  }
-
-  .input-box {
-    padding: 12px;
-  }
-
-  .pomodoro {
-    padding: 30px 15px;
-  }
-
-  .pomodoro h1 {
-    font-size: 28px;
-    text-align: center;
-  }
-
-  .controls {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.sound-controls p {
+  width: 100%;
+  text-align: center;
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: #666;
 }
 
 /* ========================= */
@@ -626,4 +709,58 @@ body {
 
 .chat-item.active {
   background: #e9e9ee;
+}
+
+/* ========================= */
+/* 📱 MOBILE BREAKPOINT */
+/* ========================= */
+
+@media (max-width: 768px) {
+  .empty-state {
+    padding: 16px;
+  }
+
+  .center-input {
+    max-width: 100%;
+  }
+
+  .message {
+    max-width: 88%;
+  }
+
+  .chat-box {
+    padding: 14px;
+  }
+
+  .input-box {
+    padding: 10px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  /* hide "Send" text, show icon only on very small screens */
+  .input-box button {
+    padding: 11px 14px;
+  }
+}
+
+/* ========================= */
+/* 📱 SMALL PHONES (<400px) */
+/* ========================= */
+
+@media (max-width: 400px) {
+  .message {
+    max-width: 95%;
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .chat-box {
+    padding: 10px;
+  }
+
+  .controls button,
+  .sound-controls button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 }
