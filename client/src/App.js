@@ -28,7 +28,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
-const API_URL = "https://kiinai-production.up.railway.app/chat";
+const API_URL = "https://zengpt-backend.kiinbackend.workers.dev/chat";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -158,7 +158,6 @@ function App() {
 
   // 💬 New / Delete chat
   const newChat = async () => {
-    // Don't create another empty chat if current one is already empty
     const current = chats.find(c => c.id === currentChatId);
     if (current && current.messages.length === 0 && mode !== "study") {
       setCurrentChatId(current.id);
@@ -169,7 +168,6 @@ function App() {
     const docRef = await addDoc(chatsRef, newChatObj);
     setChats(prev => [...prev, { id: docRef.id, ...newChatObj }]);
     setCurrentChatId(docRef.id);
-    // Switch back to chat view if in study mode
     if (mode === "study") setMode("normal");
   };
 
@@ -186,9 +184,7 @@ function App() {
 
   const selectChat = (id) => {
     setCurrentChatId(id);
-    // Clicking a chat always goes to chat view
     if (mode === "study") setMode("normal");
-    // Close sidebar on mobile after selecting
     if (isMobile) setSidebarOpen(false);
   };
 
@@ -298,7 +294,6 @@ function App() {
   // ─── SHARED SIDEBAR ───────────────────────────────────────────
   const Sidebar = () => (
     <div className={`sidebar ${sidebarOpen ? "open" : ""} ${isMobile && !sidebarOpen ? "mini" : ""}`}>
-      {/* Top: toggle + logo */}
       <div className="top">
         <div className="menu-btn" onClick={() => setSidebarOpen(o => !o)}>
           <BsLayoutSidebar />
@@ -306,7 +301,6 @@ function App() {
         {sidebarOpen && <div className="logo">Kiin AI</div>}
       </div>
 
-      {/* New chat button */}
       <div className="actions">
         <div className="action" onClick={newChat}>
           <PiChatCircle />
@@ -314,7 +308,6 @@ function App() {
         </div>
       </div>
 
-      {/* Chat list — only shown in chat modes */}
       {mode !== "study" && (
         <div className="chat-list">
           {chats.map((c) => (
@@ -334,7 +327,6 @@ function App() {
         </div>
       )}
 
-      {/* Mode switcher — bottom, above logout */}
       <div className="mode-switcher">
         <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => setMode("normal")}>
           <GiBrain /> {sidebarOpen && <span>Normal</span>}
@@ -347,7 +339,6 @@ function App() {
         </div>
       </div>
 
-      {/* Logout */}
       <div className="profile" onClick={logout}>
         <IoIosLogOut />
         {sidebarOpen && <span>Logout</span>}
@@ -356,7 +347,7 @@ function App() {
   );
 
   // ─── AUTH PAGE ────────────────────────────────────────────────
-  if (authLoading) return null; // wait silently — Firebase is checking the session
+  if (authLoading) return null;
 
   if (!user) {
     return (
@@ -375,14 +366,12 @@ function App() {
   // ─── MAIN APP ─────────────────────────────────────────────────
   return (
     <div className="app">
-      {/* Dim backdrop when sidebar is open on mobile */}
       {isMobile && sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
       <Sidebar />
 
       <div className="main">
-        {/* ── STUDY MODE ── */}
         {mode === "study" && (
           <div className="pomodoro">
             <h1>{isBreak ? "Doomscroll time " : "Lock in! "}</h1>
@@ -402,7 +391,6 @@ function App() {
           </div>
         )}
 
-        {/* ── CHAT MODE ── */}
         {mode !== "study" && (
           <>
             {currentChat.messages.length === 0 ? (
