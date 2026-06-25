@@ -3,7 +3,6 @@ import remarkGfm from "remark-gfm";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import { auth } from "./firebase";
-import { IoIosLogOut } from "react-icons/io";
 import { PiChatCircle } from "react-icons/pi";
 import { BsLayoutSidebar } from "react-icons/bs";
 import { GoTrash } from "react-icons/go";
@@ -11,6 +10,7 @@ import { BsPaperclip } from "react-icons/bs";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
 import { GiBrain } from "react-icons/gi";
 import { TbBooks } from "react-icons/tb";
+import { IoSettingsOutline } from "react-icons/io5";
 import FlipClock from "./FlipClock";
 import {
   signInWithEmailAndPassword,
@@ -28,6 +28,14 @@ import {
 import { db } from "./firebase";
 
 const API_URL = "https://zengpt-backend.kiinbackend.workers.dev/chat";
+
+const ACCENT_COLORS = [
+  { name: "pink",   main: "#ff8fb1", hover: "#ff6f9c", light: "#ffe4ee", lightHover: "#ffd6e7" },
+  { name: "blue",   main: "#4f8cff", hover: "#2d6ff0", light: "#e0eaff", lightHover: "#c7d9ff" },
+  { name: "green",  main: "#3ecf8e", hover: "#28b87a", light: "#d6f5e8", lightHover: "#b8edda" },
+  { name: "yellow", main: "#f5a623", hover: "#e09510", light: "#fff3d6", lightHover: "#ffe8b0" },
+  { name: "purple", main: "#a259ff", hover: "#8a3fe8", light: "#ede0ff", lightHover: "#dcc9ff" },
+];
 
 function App() {
   const [user, setUser] = useState(null);
@@ -57,9 +65,53 @@ function App() {
   // 🍅 Pomodoro
   const [time, setTime] = useState(1500);
   const [audio, setAudio] = useState(null);
+  const [activeSound, setActiveSound] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const timerRef = useRef(null);
+
+  // 🎨 Theme
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
+  const [accentIndex, setAccentIndex] = useState(() => parseInt(localStorage.getItem("accentIndex") || "0"));
+  const [showSettings, setShowSettings] = useState(false);
+
+  const accent = ACCENT_COLORS[accentIndex];
+
+  // Apply theme to CSS variables
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--accent", accent.main);
+    root.style.setProperty("--accent-hover", accent.hover);
+    root.style.setProperty("--accent-light", accent.light);
+    root.style.setProperty("--accent-light-hover", accent.lightHover);
+    if (darkMode) {
+      root.style.setProperty("--bg", "#111318");
+      root.style.setProperty("--sidebar-bg", "#1a1d24");
+      root.style.setProperty("--surface", "#1e2128");
+      root.style.setProperty("--border", "#2e3138");
+      root.style.setProperty("--text", "#e8e8f0");
+      root.style.setProperty("--text-muted", "#7a7a90");
+      root.style.setProperty("--msg-user", "#2a1f2e");
+      root.style.setProperty("--msg-ai", "#1e2128");
+      root.style.setProperty("--hover", "#2a2d36");
+      root.style.setProperty("--input-bg", "#1e2128");
+      root.style.setProperty("--input-border", "#2e3138");
+    } else {
+      root.style.setProperty("--bg", "#f5f5f7");
+      root.style.setProperty("--sidebar-bg", "#f7f7f8");
+      root.style.setProperty("--surface", "#ffffff");
+      root.style.setProperty("--border", "#e5e5e5");
+      root.style.setProperty("--text", "#111111");
+      root.style.setProperty("--text-muted", "#999999");
+      root.style.setProperty("--msg-user", accent.light);
+      root.style.setProperty("--msg-ai", "#e5e5ea");
+      root.style.setProperty("--hover", "#e9e9ee");
+      root.style.setProperty("--input-bg", "#ffffff");
+      root.style.setProperty("--input-border", "#dddddd");
+    }
+    localStorage.setItem("darkMode", darkMode);
+    localStorage.setItem("accentIndex", accentIndex);
+  }, [darkMode, accentIndex, accent]);
 
   // 🔐 Auth listener
   useEffect(() => {
@@ -73,7 +125,6 @@ function App() {
           setChats(loadedChats);
           setCurrentChatId(loadedChats[0].id);
         } else {
-          // No saved chats — start with a local empty chat (don't save to Firestore yet)
           const newId = String(Date.now());
           setChats([{ id: newId, title: "New Chat", messages: [] }]);
           setCurrentChatId(newId);
@@ -89,7 +140,7 @@ function App() {
     if (!user) return;
     const saveChats = async () => {
       for (const chat of chats) {
-        if (chat.messages.length === 0) continue; // don't persist empty chats
+        if (chat.messages.length === 0) continue;
         const chatRef = doc(db, "users", user.uid, "chats", chat.id);
         await setDoc(chatRef, { title: chat.title, messages: chat.messages });
       }
@@ -139,6 +190,7 @@ function App() {
     const newId = String(Date.now());
     setChats([{ id: newId, title: "New Chat", messages: [] }]);
     setCurrentChatId(newId);
+    setShowSettings(false);
   };
 
   // 📂 File upload
@@ -159,12 +211,10 @@ function App() {
   // 💬 New / Delete chat
   const newChat = async () => {
     const current = chats.find(c => c.id === currentChatId);
-    // If already on an empty chat, just stay there
     if (current && current.messages.length === 0 && mode !== "study") {
       setCurrentChatId(current.id);
       return;
     }
-    // Create a local empty chat (not saved to Firestore until messages exist)
     const newId = String(Date.now());
     setChats(prev => [...prev, { id: newId, title: "New Chat", messages: [] }]);
     setCurrentChatId(newId);
@@ -172,7 +222,6 @@ function App() {
   };
 
   const deleteChat = async (id) => {
-    // Only delete from Firestore if it has messages (otherwise it was never saved)
     const chat = chats.find(c => c.id === id);
     if (chat && chat.messages.length > 0) {
       await deleteDoc(doc(db, "users", user.uid, "chats", id));
@@ -222,9 +271,11 @@ function App() {
     newAudio.volume = 0.5;
     newAudio.play();
     setAudio(newAudio);
+    setActiveSound(src);
   };
   const stopSound = () => {
     if (audio) { audio.pause(); setAudio(null); }
+    setActiveSound(null);
   };
 
   // 🚀 Send message
@@ -297,6 +348,41 @@ function App() {
     }
   };
 
+  // ─── SETTINGS MODAL ───────────────────────────────────────────
+  const SettingsModal = () => (
+    <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <h3>Settings</h3>
+
+        <div className="setting-row">
+          <span>Dark mode</span>
+          <div
+            className={`toggle ${darkMode ? "on" : ""}`}
+            onClick={() => setDarkMode(d => !d)}
+          >
+            <div className="toggle-thumb" />
+          </div>
+        </div>
+
+        <div className="setting-row col">
+          <span>Accent color</span>
+          <div className="color-picks">
+            {ACCENT_COLORS.map((c, i) => (
+              <div
+                key={c.name}
+                className={`color-dot ${i === accentIndex ? "selected" : ""}`}
+                style={{ background: c.main }}
+                onClick={() => setAccentIndex(i)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <button className="modal-logout" onClick={logout}>Logout</button>
+      </div>
+    </div>
+  );
+
   // ─── SHARED SIDEBAR ───────────────────────────────────────────
   const Sidebar = () => (
     <div className={`sidebar ${sidebarOpen ? "open" : ""} ${isMobile && !sidebarOpen ? "mini" : ""}`}>
@@ -333,6 +419,8 @@ function App() {
         </div>
       )}
 
+      {mode === "study" && <div style={{ flex: 1 }} />}
+
       <div className="mode-switcher">
         <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => setMode("normal")}>
           <GiBrain /> {sidebarOpen && <span>Normal</span>}
@@ -345,9 +433,9 @@ function App() {
         </div>
       </div>
 
-      <div className="profile" onClick={logout}>
-        <IoIosLogOut />
-        {sidebarOpen && <span>Logout</span>}
+      <div className="profile" onClick={() => setShowSettings(true)}>
+        <IoSettingsOutline />
+        {sidebarOpen && <span>Settings</span>}
       </div>
     </div>
   );
@@ -372,6 +460,7 @@ function App() {
   // ─── MAIN APP ─────────────────────────────────────────────────
   return (
     <div className="app">
+      {showSettings && <SettingsModal />}
       {isMobile && sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
@@ -389,9 +478,18 @@ function App() {
             </div>
             <div className="sound-controls">
               <p>Focus Sounds</p>
-              <button onClick={() => playSound("/sounds/rain.mp3")}>🌧</button>
-              <button onClick={() => playSound("/sounds/heater.mp3")}>🔥</button>
-              <button onClick={() => playSound("/sounds/whitenoise.mp3")}>🎧</button>
+              <button
+                className={activeSound === "/sounds/rain.mp3" ? "active-sound" : ""}
+                onClick={() => playSound("/sounds/rain.mp3")}
+              >🌧</button>
+              <button
+                className={activeSound === "/sounds/heater.mp3" ? "active-sound" : ""}
+                onClick={() => playSound("/sounds/heater.mp3")}
+              >🔥</button>
+              <button
+                className={activeSound === "/sounds/whitenoise.mp3" ? "active-sound" : ""}
+                onClick={() => playSound("/sounds/whitenoise.mp3")}
+              >🎧</button>
               <button onClick={stopSound}>Stop</button>
             </div>
           </div>
