@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import remarkGfm from "remark-gfm";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { auth } from "./firebase";
 import { PiChatCircle } from "react-icons/pi";
 import { BsLayoutSidebar } from "react-icons/bs";
@@ -10,7 +12,7 @@ import { BsPaperclip } from "react-icons/bs";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
 import { GiBrain } from "react-icons/gi";
 import { TbBooks } from "react-icons/tb";
-import { IoSettingsOutline } from "react-icons/io5";
+import { IoSettingsOutline, IoCopyOutline, IoCheckmarkOutline } from "react-icons/io5";
 import FlipClock from "./FlipClock";
 import {
   signInWithEmailAndPassword,
@@ -37,6 +39,65 @@ const ACCENT_COLORS = [
   { name: "purple", main: "#a259ff", hover: "#8a3fe8", light: "#ede0ff", lightHover: "#dcc9ff" },
 ];
 
+const CODING_PROMPTS = [
+  "Explain how async/await works",
+  "Review my code for bugs",
+  "Write a Python script to read a CSV file",
+  "What's the difference between SQL and NoSQL?",
+  "How do I center a div in CSS?",
+  "Explain Big O notation simply",
+];
+
+// ─── CODE BLOCK ───────────────────────────────────────────────
+const CodeBlock = ({ language, value }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="code-block">
+      <div className="code-header">
+        <span className="code-lang">{language || "code"}</span>
+        <button className="copy-btn" onClick={handleCopy}>
+          {copied ? <><IoCheckmarkOutline /> Copied!</> : <><IoCopyOutline /> Copy</>}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        language={language || "text"}
+        style={oneDark}
+        customStyle={{ margin: 0, borderRadius: "0 0 10px 10px", fontSize: "13px", padding: "16px" }}
+        showLineNumbers={true}
+      >
+        {value}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
+// ─── MARKDOWN RENDERER ────────────────────────────────────────
+const MarkdownRenderer = ({ content }) => (
+  <ReactMarkdown
+    remarkPlugins={[remarkGfm]}
+    components={{
+      code({ node, inline, className, children, ...props }) {
+        const match = /language-(\w+)/.exec(className || "");
+        const language = match ? match[1] : "";
+        const value = String(children).replace(/\n$/, "");
+        if (!inline && (match || value.includes("\n"))) {
+          return <CodeBlock language={language} value={value} />;
+        }
+        return <code className="inline-code" {...props}>{children}</code>;
+      },
+    }}
+  >
+    {content}
+  </ReactMarkdown>
+);
+
 function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -46,6 +107,7 @@ function App() {
   // 🔐 auth
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState("");
 
   // 💬 chat
   const [message, setMessage] = useState("");
@@ -178,12 +240,14 @@ function App() {
 
   // 🔑 Login / Signup / Logout
   const login = async () => {
+    setAuthError("");
     try { await signInWithEmailAndPassword(auth, email, password); }
-    catch (err) { alert(err.message); }
+    catch (err) { setAuthError(err.message); }
   };
   const signup = async () => {
+    setAuthError("");
     try { await createUserWithEmailAndPassword(auth, email, password); }
-    catch (err) { alert(err.message); }
+    catch (err) { setAuthError(err.message); }
   };
   const logout = async () => {
     await signOut(auth);
@@ -208,8 +272,34 @@ function App() {
     }));
   };
 
+  // 🎛️ Switch mode — open fresh chat for coding, clean up empty chats
+  const switchMode = (newMode) => {
+    if (newMode === "coding" && mode !== "coding") {
+      const current = chats.find(c => c.id === currentChatId);
+      if (current && current.messages.length > 0) {
+        const newId = String(Date.now());
+        setChats(prev => [...prev, { id: newId, title: "New Chat", messages: [] }]);
+        setCurrentChatId(newId);
+      }
+    }
+    // Clean up empty chats when switching away from coding
+    if (mode === "coding" && newMode !== "coding") {
+      setChats(prev => {
+        const nonEmpty = prev.filter(c => c.messages.length > 0);
+        if (nonEmpty.length === 0) {
+          const newId = String(Date.now());
+          setCurrentChatId(newId);
+          return [{ id: newId, title: "New Chat", messages: [] }];
+        }
+        setCurrentChatId(nonEmpty[0].id);
+        return nonEmpty;
+      });
+    }
+    setMode(newMode);
+  };
+
   // 💬 New / Delete chat
-  const newChat = async () => {
+  const newChat = () => {
     const current = chats.find(c => c.id === currentChatId);
     if (current && current.messages.length === 0 && mode !== "study") {
       setCurrentChatId(current.id);
@@ -279,10 +369,11 @@ function App() {
   };
 
   // 🚀 Send message
-  const sendMessage = async () => {
-    if (!message.trim()) return;
+  const sendMessage = async (overrideMessage) => {
+    const msg = (overrideMessage !== undefined ? overrideMessage : message).trim();
+    if (!msg) return;
 
-    const userMsg = { role: "user", content: message };
+    const userMsg = { role: "user", content: msg };
     const updatedMessages = [...currentChat.messages, userMsg];
     const isFirstMessage = currentChat.messages.length === 0;
 
@@ -298,7 +389,7 @@ function App() {
       const context = contextFiles ? contextFiles.map(f => f.text).join("\n\n") : null;
 
       let systemPrompt = "Be helpful and clear.";
-      if (mode === "coding") systemPrompt = "You are a coding assistant. Be concise and technical.";
+      if (mode === "coding") systemPrompt = "You are a coding assistant. Be concise and technical. Always wrap code in markdown code blocks with the language specified.";
       else if (mode === "study") systemPrompt = "Explain step-by-step in a simple way like a tutor.";
 
       const finalMessages = [
@@ -353,17 +444,12 @@ function App() {
     <div className="modal-overlay" onClick={() => setShowSettings(false)}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <h3>Settings</h3>
-
         <div className="setting-row">
           <span>Dark mode</span>
-          <div
-            className={`toggle ${darkMode ? "on" : ""}`}
-            onClick={() => setDarkMode(d => !d)}
-          >
+          <div className={`toggle ${darkMode ? "on" : ""}`} onClick={() => setDarkMode(d => !d)}>
             <div className="toggle-thumb" />
           </div>
         </div>
-
         <div className="setting-row col">
           <span>Accent color</span>
           <div className="color-picks">
@@ -377,7 +463,6 @@ function App() {
             ))}
           </div>
         </div>
-
         <button className="modal-logout" onClick={logout}>Logout</button>
       </div>
     </div>
@@ -400,7 +485,8 @@ function App() {
         </div>
       </div>
 
-      {mode !== "study" && (
+      {/* Hide chat list in coding and study mode */}
+      {mode === "normal" && (
         <div className="chat-list">
           {chats.map((c) => (
             <div
@@ -419,16 +505,16 @@ function App() {
         </div>
       )}
 
-      {mode === "study" && <div style={{ flex: 1 }} />}
+      {(mode === "study" || mode === "coding") && <div style={{ flex: 1 }} />}
 
       <div className="mode-switcher">
-        <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => setMode("normal")}>
+        <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => switchMode("normal")}>
           <GiBrain /> {sidebarOpen && <span>Normal</span>}
         </div>
-        <div className={`action ${mode === "coding" ? "active-mode" : ""}`} onClick={() => setMode("coding")}>
+        <div className={`action ${mode === "coding" ? "active-mode" : ""}`} onClick={() => switchMode("coding")}>
           <HiOutlineComputerDesktop /> {sidebarOpen && <span>Coding</span>}
         </div>
-        <div className={`action ${mode === "study" ? "active-mode" : ""}`} onClick={() => setMode("study")}>
+        <div className={`action ${mode === "study" ? "active-mode" : ""}`} onClick={() => switchMode("study")}>
           <TbBooks /> {sidebarOpen && <span>Study</span>}
         </div>
       </div>
@@ -448,8 +534,9 @@ function App() {
       <div className="auth-page">
         <div className="auth-card">
           <h2 style={{ fontFamily: "CuteFont" }}>KIIn</h2>
-          <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+          <input placeholder="Email" onChange={(e) => { setEmail(e.target.value); setAuthError(""); }} />
+          <input type="password" placeholder="Password" onChange={(e) => { setPassword(e.target.value); setAuthError(""); }} />
+          {authError && <p className="auth-error">{authError}</p>}
           <button onClick={login}>Login</button>
           <button onClick={signup}>Sign Up</button>
         </div>
@@ -478,18 +565,9 @@ function App() {
             </div>
             <div className="sound-controls">
               <p>Focus Sounds</p>
-              <button
-                className={activeSound === "/sounds/rain.mp3" ? "active-sound" : ""}
-                onClick={() => playSound("/sounds/rain.mp3")}
-              >🌧</button>
-              <button
-                className={activeSound === "/sounds/heater.mp3" ? "active-sound" : ""}
-                onClick={() => playSound("/sounds/heater.mp3")}
-              >🔥</button>
-              <button
-                className={activeSound === "/sounds/whitenoise.mp3" ? "active-sound" : ""}
-                onClick={() => playSound("/sounds/whitenoise.mp3")}
-              >🎧</button>
+              <button className={activeSound === "/sounds/rain.mp3" ? "active-sound" : ""} onClick={() => playSound("/sounds/rain.mp3")}>🌧</button>
+              <button className={activeSound === "/sounds/heater.mp3" ? "active-sound" : ""} onClick={() => playSound("/sounds/heater.mp3")}>🔥</button>
+              <button className={activeSound === "/sounds/whitenoise.mp3" ? "active-sound" : ""} onClick={() => playSound("/sounds/whitenoise.mp3")}>🎧</button>
               <button onClick={stopSound}>Stop</button>
             </div>
           </div>
@@ -499,20 +577,48 @@ function App() {
           <>
             {currentChat.messages.length === 0 ? (
               <div className="empty-state">
-                <h1>What ki-in I do for you today?</h1>
-                <div className="center-input">
-                  <input id="fileUploadTop" type="file" accept=".txt" style={{ display: "none" }} onChange={handleFileUpload} />
-                  <div className="upload-btn" onClick={() => document.getElementById("fileUploadTop").click()}>
-                    <BsPaperclip />
-                  </div>
-                  <input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                    placeholder="Ask anything"
-                  />
-                  <button onClick={sendMessage}>↑</button>
-                </div>
+                {mode === "coding" ? (
+                  <>
+                    <h1>Wwhat are we vibing today :P️</h1>
+                    <div className="suggestion-grid">
+                      {CODING_PROMPTS.map((prompt, i) => (
+                        <div key={i} className="suggestion-card" onClick={() => sendMessage(prompt)}>
+                          {prompt}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="center-input" style={{ marginTop: "24px" }}>
+                      <input id="fileUploadCoding" type="file" accept=".txt" style={{ display: "none" }} onChange={handleFileUpload} />
+                      <div className="upload-btn" onClick={() => document.getElementById("fileUploadCoding").click()}>
+                        <BsPaperclip />
+                      </div>
+                      <input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Or ask anything..."
+                      />
+                      <button onClick={() => sendMessage()}>↑</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1>What ki-in I do for you today?</h1>
+                    <div className="center-input">
+                      <input id="fileUploadNormal" type="file" accept=".txt" style={{ display: "none" }} onChange={handleFileUpload} />
+                      <div className="upload-btn" onClick={() => document.getElementById("fileUploadNormal").click()}>
+                        <BsPaperclip />
+                      </div>
+                      <input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Ask anything"
+                      />
+                      <button onClick={() => sendMessage()}>↑</button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -525,7 +631,7 @@ function App() {
                           : (() => {
                               let content = msg.content;
                               try { const p = JSON.parse(msg.content); if (p.reply) content = p.reply; } catch {}
-                              return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
+                              return <MarkdownRenderer content={content} />;
                             })()
                         : msg.content}
                     </div>
@@ -544,7 +650,7 @@ function App() {
                     onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                     placeholder="Ask anything..."
                   />
-                  <button onClick={sendMessage}>Send</button>
+                  <button onClick={() => sendMessage()}>Send</button>
                 </div>
               </>
             )}

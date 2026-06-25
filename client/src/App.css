@@ -64,6 +64,13 @@ body {
   background: var(--bg);
 }
 
+.auth-error {
+  color: #ff4d4d;
+  font-size: 13px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
 .auth-card {
   background: var(--surface);
   padding: 35px 30px;
@@ -838,4 +845,95 @@ body {
   background: var(--accent);
   color: white;
   border-color: var(--accent);
+}
+
+/* ========================= */
+/* 💻 CODE BLOCK */
+/* ========================= */
+
+.code-block {
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #282c34;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.code-lang {
+  font-size: 12px;
+  color: #abb2bf;
+  font-family: monospace;
+  text-transform: lowercase;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #abb2bf;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.inline-code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* active sound */
+.sound-controls button.active-sound {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ========================= */
+/* 💡 SUGGESTION GRID */
+/* ========================= */
+
+.suggestion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 620px;
+  margin-bottom: 8px;
+}
+
+.suggestion-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  line-height: 1.4;
+}
+
+.suggestion-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
 }
