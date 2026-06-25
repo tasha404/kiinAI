@@ -13,6 +13,7 @@ import { HiOutlineComputerDesktop } from "react-icons/hi2";
 import { GiBrain } from "react-icons/gi";
 import { TbBooks } from "react-icons/tb";
 import { IoSettingsOutline, IoCopyOutline, IoCheckmarkOutline } from "react-icons/io5";
+import { RiMenu3Line } from "react-icons/ri";
 import FlipClock from "./FlipClock";
 import {
   signInWithEmailAndPassword,
@@ -121,7 +122,7 @@ function App() {
   const [fileContext, setFileContext] = useState({});
 
   // 📁 sidebar
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // 🍅 Pomodoro
@@ -233,7 +234,10 @@ function App() {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
       if (!mobile) setSidebarOpen(true);
+      else setSidebarOpen(false);
     };
+    // Set initial state correctly
+    if (window.innerWidth > 768) setSidebarOpen(true);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -272,7 +276,7 @@ function App() {
     }));
   };
 
-  // 🎛️ Switch mode — open fresh chat for coding, clean up empty chats
+  // 🎛️ Switch mode
   const switchMode = (newMode) => {
     if (newMode === "coding" && mode !== "coding") {
       const current = chats.find(c => c.id === currentChatId);
@@ -282,7 +286,6 @@ function App() {
         setCurrentChatId(newId);
       }
     }
-    // Clean up empty chats when switching away from coding
     if (mode === "coding" && newMode !== "coding") {
       setChats(prev => {
         const nonEmpty = prev.filter(c => c.messages.length > 0);
@@ -296,6 +299,7 @@ function App() {
       });
     }
     setMode(newMode);
+    if (isMobile) setSidebarOpen(false);
   };
 
   // 💬 New / Delete chat
@@ -303,12 +307,14 @@ function App() {
     const current = chats.find(c => c.id === currentChatId);
     if (current && current.messages.length === 0 && mode !== "study") {
       setCurrentChatId(current.id);
+      if (isMobile) setSidebarOpen(false);
       return;
     }
     const newId = String(Date.now());
     setChats(prev => [...prev, { id: newId, title: "New Chat", messages: [] }]);
     setCurrentChatId(newId);
     if (mode === "study") setMode("normal");
+    if (isMobile) setSidebarOpen(false);
   };
 
   const deleteChat = async (id) => {
@@ -470,7 +476,7 @@ function App() {
 
   // ─── SHARED SIDEBAR ───────────────────────────────────────────
   const Sidebar = () => (
-    <div className={`sidebar ${sidebarOpen ? "open" : ""} ${isMobile && !sidebarOpen ? "mini" : ""}`}>
+    <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <div className="top">
         <div className="menu-btn" onClick={() => setSidebarOpen(o => !o)}>
           <BsLayoutSidebar />
@@ -478,51 +484,52 @@ function App() {
         {sidebarOpen && <div className="logo">Kiin AI</div>}
       </div>
 
-      <div className="actions">
-        <div className="action" onClick={newChat}>
-          <PiChatCircle />
-          {sidebarOpen && <span>New chat</span>}
-        </div>
-      </div>
-
-      {/* Hide chat list in coding and study mode */}
-      {mode === "normal" && (
-        <div className="chat-list">
-          {chats.map((c) => (
-            <div
-              key={c.id}
-              className={`chat-item ${c.id === currentChatId ? "active" : ""}`}
-              onClick={() => selectChat(c.id)}
-            >
-              {sidebarOpen && <span className="chat-title">{c.title}</span>}
-              {sidebarOpen && (
-                <button className="delete-btn" onClick={(e) => { e.stopPropagation(); deleteChat(c.id); }}>
-                  <GoTrash />
-                </button>
-              )}
+      {sidebarOpen && (
+        <>
+          <div className="actions">
+            <div className="action" onClick={newChat}>
+              <PiChatCircle />
+              <span>New chat</span>
             </div>
-          ))}
-        </div>
+          </div>
+
+          {mode === "normal" && (
+            <div className="chat-list">
+              {chats.map((c) => (
+                <div
+                  key={c.id}
+                  className={`chat-item ${c.id === currentChatId ? "active" : ""}`}
+                  onClick={() => selectChat(c.id)}
+                >
+                  <span className="chat-title">{c.title}</span>
+                  <button className="delete-btn" onClick={(e) => { e.stopPropagation(); deleteChat(c.id); }}>
+                    <GoTrash />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(mode === "study" || mode === "coding") && <div style={{ flex: 1 }} />}
+
+          <div className="mode-switcher">
+            <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => switchMode("normal")}>
+              <GiBrain /> <span>Normal</span>
+            </div>
+            <div className={`action ${mode === "coding" ? "active-mode" : ""}`} onClick={() => switchMode("coding")}>
+              <HiOutlineComputerDesktop /> <span>Coding</span>
+            </div>
+            <div className={`action ${mode === "study" ? "active-mode" : ""}`} onClick={() => switchMode("study")}>
+              <TbBooks /> <span>Study</span>
+            </div>
+          </div>
+
+          <div className="profile" onClick={() => setShowSettings(true)}>
+            <IoSettingsOutline />
+            <span>Settings</span>
+          </div>
+        </>
       )}
-
-      {(mode === "study" || mode === "coding") && <div style={{ flex: 1 }} />}
-
-      <div className="mode-switcher">
-        <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => switchMode("normal")}>
-          <GiBrain /> {sidebarOpen && <span>Normal</span>}
-        </div>
-        <div className={`action ${mode === "coding" ? "active-mode" : ""}`} onClick={() => switchMode("coding")}>
-          <HiOutlineComputerDesktop /> {sidebarOpen && <span>Coding</span>}
-        </div>
-        <div className={`action ${mode === "study" ? "active-mode" : ""}`} onClick={() => switchMode("study")}>
-          <TbBooks /> {sidebarOpen && <span>Study</span>}
-        </div>
-      </div>
-
-      <div className="profile" onClick={() => setShowSettings(true)}>
-        <IoSettingsOutline />
-        {sidebarOpen && <span>Settings</span>}
-      </div>
     </div>
   );
 
@@ -548,12 +555,22 @@ function App() {
   return (
     <div className="app">
       {showSettings && <SettingsModal />}
+
+      {/* Mobile overlay */}
       {isMobile && sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
+
+      {/* Floating hamburger for mobile — only when sidebar is closed */}
+      {isMobile && !sidebarOpen && (
+        <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>
+          <RiMenu3Line />
+        </button>
+      )}
+
       <Sidebar />
 
-      <div className="main">
+      <div className={`main ${isMobile ? "main-full" : ""}`}>
         {mode === "study" && (
           <div className="pomodoro">
             <h1>{isBreak ? "Doomscroll time " : "Lock in! "}</h1>
