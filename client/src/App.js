@@ -20,7 +20,6 @@ import {
 } from "firebase/auth";
 import {
   collection,
-  addDoc,
   getDocs,
   doc,
   setDoc,
@@ -74,10 +73,10 @@ function App() {
           setChats(loadedChats);
           setCurrentChatId(loadedChats[0].id);
         } else {
-          const newChatObj = { title: "New Chat", messages: [] };
-          const docRef = await addDoc(chatsRef, newChatObj);
-          setChats([{ id: docRef.id, ...newChatObj }]);
-          setCurrentChatId(docRef.id);
+          // No saved chats — start with a local empty chat (don't save to Firestore yet)
+          const newId = String(Date.now());
+          setChats([{ id: newId, title: "New Chat", messages: [] }]);
+          setCurrentChatId(newId);
         }
       }
       setAuthLoading(false);
@@ -85,11 +84,12 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // 💾 Save chats to Firestore
+  // 💾 Save chats to Firestore — skip empty chats
   useEffect(() => {
     if (!user) return;
     const saveChats = async () => {
       for (const chat of chats) {
+        if (chat.messages.length === 0) continue; // don't persist empty chats
         const chatRef = doc(db, "users", user.uid, "chats", chat.id);
         await setDoc(chatRef, { title: chat.title, messages: chat.messages });
       }
@@ -159,23 +159,29 @@ function App() {
   // 💬 New / Delete chat
   const newChat = async () => {
     const current = chats.find(c => c.id === currentChatId);
+    // If already on an empty chat, just stay there
     if (current && current.messages.length === 0 && mode !== "study") {
       setCurrentChatId(current.id);
       return;
     }
-    const chatsRef = collection(db, "users", user.uid, "chats");
-    const newChatObj = { title: "New Chat", messages: [] };
-    const docRef = await addDoc(chatsRef, newChatObj);
-    setChats(prev => [...prev, { id: docRef.id, ...newChatObj }]);
-    setCurrentChatId(docRef.id);
+    // Create a local empty chat (not saved to Firestore until messages exist)
+    const newId = String(Date.now());
+    setChats(prev => [...prev, { id: newId, title: "New Chat", messages: [] }]);
+    setCurrentChatId(newId);
     if (mode === "study") setMode("normal");
   };
 
   const deleteChat = async (id) => {
-    await deleteDoc(doc(db, "users", user.uid, "chats", id));
+    // Only delete from Firestore if it has messages (otherwise it was never saved)
+    const chat = chats.find(c => c.id === id);
+    if (chat && chat.messages.length > 0) {
+      await deleteDoc(doc(db, "users", user.uid, "chats", id));
+    }
     const filtered = chats.filter(c => c.id !== id);
     if (filtered.length === 0) {
-      newChat();
+      const newId = String(Date.now());
+      setChats([{ id: newId, title: "New Chat", messages: [] }]);
+      setCurrentChatId(newId);
     } else {
       setChats(filtered);
       setCurrentChatId(filtered[0].id);
