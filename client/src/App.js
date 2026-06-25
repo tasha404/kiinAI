@@ -12,6 +12,7 @@ import { BsPaperclip } from "react-icons/bs";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
 import { GiBrain } from "react-icons/gi";
 import { TbBooks } from "react-icons/tb";
+import { MdOutlineBarChart } from "react-icons/md";
 import { IoSettingsOutline, IoCopyOutline, IoCheckmarkOutline } from "react-icons/io5";
 import { RiMenu3Line } from "react-icons/ri";
 import FlipClock from "./FlipClock";
@@ -38,6 +39,15 @@ const ACCENT_COLORS = [
   { name: "green",  main: "#3ecf8e", hover: "#28b87a", light: "#d6f5e8", lightHover: "#b8edda" },
   { name: "yellow", main: "#f5a623", hover: "#e09510", light: "#fff3d6", lightHover: "#ffe8b0" },
   { name: "purple", main: "#a259ff", hover: "#8a3fe8", light: "#ede0ff", lightHover: "#dcc9ff" },
+];
+
+const ANALYST_PROMPTS = [
+  "Should I choose React or Vue for my next project?",
+  "Pros and cons of remote work vs office",
+  "Analyze the risks of launching a startup now",
+  "Compare SQL vs NoSQL for my use case",
+  "Is it worth learning Rust in 2025?",
+  "Help me decide between two job offers",
 ];
 
 const CODING_PROMPTS = [
@@ -278,7 +288,7 @@ function App() {
 
   // 🎛️ Switch mode
   const switchMode = (newMode) => {
-    if (newMode === "coding" && mode !== "coding") {
+    if ((newMode === "coding" || newMode === "analyst") && mode !== newMode) {
       const current = chats.find(c => c.id === currentChatId);
       if (current && current.messages.length > 0) {
         const newId = String(Date.now());
@@ -286,7 +296,7 @@ function App() {
         setCurrentChatId(newId);
       }
     }
-    if (mode === "coding" && newMode !== "coding") {
+    if ((mode === "coding" || mode === "analyst") && newMode !== mode) {
       setChats(prev => {
         const nonEmpty = prev.filter(c => c.messages.length > 0);
         if (nonEmpty.length === 0) {
@@ -397,6 +407,12 @@ function App() {
       let systemPrompt = "Be helpful and clear.";
       if (mode === "coding") systemPrompt = "You are a coding assistant. Be concise and technical. Always wrap code in markdown code blocks with the language specified.";
       else if (mode === "study") systemPrompt = "Explain step-by-step in a simple way like a tutor.";
+      else if (mode === "analyst") systemPrompt = `You are a structured analyst. For every response, always format your answer using these sections where relevant:
+**📊 Summary** — one sentence bottom line up front.
+**✅ Pros / 🚫 Cons** — bullet points, be direct.
+**⚠️ Risks & Assumptions** — what could go wrong, what are you assuming.
+**🎯 Recommendation** — clear action or decision with a confidence level (e.g. Confidence: 8/10).
+Never write in paragraphs. Always use structured formatting.`;
 
       const finalMessages = [
         { role: "system", content: `${systemPrompt}${context ? `\nUse this file context:\n${context}` : ""}` },
@@ -510,7 +526,7 @@ function App() {
             </div>
           )}
 
-          {(mode === "study" || mode === "coding") && <div style={{ flex: 1 }} />}
+          {(mode === "study" || mode === "coding" || mode === "analyst") && <div style={{ flex: 1 }} />}
 
           <div className="mode-switcher">
             <div className={`action ${mode === "normal" ? "active-mode" : ""}`} onClick={() => switchMode("normal")}>
@@ -521,6 +537,9 @@ function App() {
             </div>
             <div className={`action ${mode === "study" ? "active-mode" : ""}`} onClick={() => switchMode("study")}>
               <TbBooks /> <span>Study</span>
+            </div>
+            <div className={`action ${mode === "analyst" ? "active-mode" : ""}`} onClick={() => switchMode("analyst")}>
+              <MdOutlineBarChart /> <span>Analyst</span>
             </div>
           </div>
 
@@ -614,6 +633,30 @@ function App() {
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                         placeholder="Or ask anything..."
+                      />
+                      <button onClick={() => sendMessage()}>↑</button>
+                    </div>
+                  </>
+                ) : mode === "analyst" ? (
+                  <>
+                    <h1>📊 What are we deciding today?</h1>
+                    <div className="suggestion-grid">
+                      {ANALYST_PROMPTS.map((prompt, i) => (
+                        <div key={i} className="suggestion-card" onClick={() => sendMessage(prompt)}>
+                          {prompt}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="center-input" style={{ marginTop: "24px" }}>
+                      <input id="fileUploadAnalyst" type="file" accept=".txt" style={{ display: "none" }} onChange={handleFileUpload} />
+                      <div className="upload-btn" onClick={() => document.getElementById("fileUploadAnalyst").click()}>
+                        <BsPaperclip />
+                      </div>
+                      <input
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                        placeholder="Give me a decision to analyze..."
                       />
                       <button onClick={() => sendMessage()}>↑</button>
                     </div>
