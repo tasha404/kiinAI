@@ -28,13 +28,19 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      // When a new SW is found, force it to activate immediately
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) return;
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              console.log('New content is available; please refresh.');
+              // New content available — tell SW to skip waiting and take over
+              installingWorker.postMessage({ type: 'SKIP_WAITING' });
               if (config && config.onUpdate) config.onUpdate(registration);
             } else {
               console.log('Content is cached for offline use.');
