@@ -511,7 +511,7 @@ Never write in paragraphs. Always use structured formatting.`;
 
           {mode === "normal" && (
             <div className="chat-list">
-              {chats.map((c) => (
+              {[...chats].reverse().map((c) => (
                 <div
                   key={c.id}
                   className={`chat-item ${c.id === currentChatId ? "active" : ""}`}
